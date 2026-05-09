@@ -1,0 +1,158 @@
+﻿using LanAnhComputer.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+// Connect Database và Sql Server thông qua Entity Framework Core (EF Core) 
+namespace LanAnhComputer.Data
+{
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public DbSet<Category> Categories => Set<Category>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
+        public DbSet<ChatbotHistory> ChatbotHistories => Set<ChatbotHistory>();
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            // Category
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.ToTable("Categories");
+                entity.HasKey(x => x.CategoryId);
+                entity.Property(x => x.CategoryCode).HasMaxLength(30).IsUnicode(false).IsRequired();
+                entity.Property(x => x.CategoryName).HasMaxLength(150).IsRequired();
+                entity.Property(x => x.Description).HasMaxLength(500);
+                entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.CategoryCode).IsUnique();
+                entity.HasOne(x => x.ParentCategory)
+                      .WithMany(x => x.ChildCategories)
+                      .HasForeignKey(x => x.ParentCategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            // User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("Users");
+                entity.HasKey(x => x.UserId);
+                entity.Property(x => x.FullName).HasMaxLength(150).IsRequired();
+                entity.Property(x => x.Email).HasMaxLength(255).IsUnicode(false).IsRequired();
+                entity.Property(x => x.Phone).HasMaxLength(20).IsUnicode(false);
+                entity.Property(x => x.PasswordHash).HasMaxLength(255).IsUnicode(false).IsRequired();
+                entity.Property(x => x.Role).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Customer");
+                entity.Property(x => x.Gender).HasMaxLength(10).IsUnicode(false);
+                entity.Property(x => x.AddressLine).HasMaxLength(255);
+                entity.Property(x => x.Ward).HasMaxLength(100);
+                entity.Property(x => x.District).HasMaxLength(100);
+                entity.Property(x => x.City).HasMaxLength(100);
+                entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.Email).IsUnique();
+                entity.HasIndex(x => x.Phone).IsUnique().HasFilter("[Phone] IS NOT NULL");
+                entity.HasCheckConstraint("CK_Users_Role", "[Role] IN ('Admin','Staff','Customer')");
+                entity.HasCheckConstraint("CK_Users_Gender", "[Gender] IS NULL OR [Gender] IN ('Male','Female','Other')");
+            });
+            // Product
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.ToTable("Products");
+                entity.HasKey(x => x.ProductId);
+                entity.Property(x => x.ProductCode).HasMaxLength(50).IsUnicode(false).IsRequired();
+                entity.Property(x => x.ProductName).HasMaxLength(255).IsRequired();
+                entity.Property(x => x.ProductType).HasMaxLength(20).IsUnicode(false).IsRequired();
+                entity.Property(x => x.Brand).HasMaxLength(100);
+                entity.Property(x => x.Model).HasMaxLength(100);
+                entity.Property(x => x.WarrantyMonths).HasDefaultValue(0);
+                entity.Property(x => x.CostPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(x => x.SalePrice).HasColumnType("decimal(18,2)");
+                entity.Property(x => x.StockQuantity).HasDefaultValue(0);
+                entity.Property(x => x.ReorderLevel).HasDefaultValue(0);
+                entity.Property(x => x.ImageUrl).HasMaxLength(500);
+                entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.ProductCode).IsUnique();
+                entity.HasIndex(x => x.CategoryId);
+                entity.HasIndex(x => x.ProductType);
+                entity.HasOne(x => x.Category)
+                      .WithMany(x => x.Products)
+                      .HasForeignKey(x => x.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasCheckConstraint("CK_Products_ProductType", "[ProductType] IN ('Computer','Component')");
+            });
+            // Order
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.ToTable("Orders");
+                entity.HasKey(x => x.OrderId);
+                entity.Property(x => x.OrderCode).HasMaxLength(30).IsUnicode(false).IsRequired();
+                entity.Property(x => x.OrderDate).HasDefaultValueSql("SYSDATETIME()");
+                entity.Property(x => x.OrderStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Pending");
+                entity.Property(x => x.PaymentMethod).HasMaxLength(20).IsUnicode(false).HasDefaultValue("COD");
+                entity.Property(x => x.PaymentStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Unpaid");
+                entity.Property(x => x.ShippingFullName).HasMaxLength(150).IsRequired();
+                entity.Property(x => x.ShippingPhone).HasMaxLength(20).IsUnicode(false).IsRequired();
+                entity.Property(x => x.ShippingAddressLine).HasMaxLength(255).IsRequired();
+                entity.Property(x => x.ShippingWard).HasMaxLength(100);
+                entity.Property(x => x.ShippingDistrict).HasMaxLength(100);
+                entity.Property(x => x.ShippingCity).HasMaxLength(100).IsRequired();
+                entity.Property(x => x.Note).HasMaxLength(500);
+                entity.Property(x => x.SubTotal).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(x => x.DiscountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(x => x.ShippingFee).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.OrderCode).IsUnique();
+                entity.HasIndex(x => x.UserId);
+                entity.HasIndex(x => x.OrderDate);
+                entity.HasOne(x => x.User)
+                      .WithMany(x => x.Orders)
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            // OrderDetail
+            modelBuilder.Entity<OrderDetail>(entity =>
+            {
+                entity.ToTable("OrderDetails");
+                entity.HasKey(x => x.OrderDetailId);
+                entity.Property(x => x.UnitPrice).HasColumnType("decimal(18,2)");
+                entity.Property(x => x.Quantity).IsRequired();
+                entity.Property(x => x.DiscountPercent).HasColumnType("decimal(5,2)").HasDefaultValue(0);
+                entity.Property(x => x.LineTotal).HasColumnType("decimal(18,2)");
+                entity.HasIndex(x => x.OrderId);
+                entity.HasIndex(x => x.ProductId);
+                entity.HasIndex(x => new { x.OrderId, x.ProductId }).IsUnique();
+                entity.HasOne(x => x.Order)
+                      .WithMany(x => x.OrderDetails)
+                      .HasForeignKey(x => x.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(x => x.Product)
+                      .WithMany(x => x.OrderDetails)
+                      .HasForeignKey(x => x.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            // ChatbotHistory
+            modelBuilder.Entity<ChatbotHistory>(entity =>
+            {
+                entity.ToTable("ChatbotHistories");
+                entity.HasKey(x => x.ChatHistoryId);
+                entity.Property(x => x.SessionId).HasMaxLength(100).IsUnicode(false).IsRequired();
+                entity.Property(x => x.UserMessage).IsRequired();
+                entity.Property(x => x.BotResponse).IsRequired();
+                entity.Property(x => x.Intent).HasMaxLength(100);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.UserId);
+                entity.HasIndex(x => x.SessionId);
+                entity.HasIndex(x => x.CreatedAt);
+                entity.HasOne(x => x.User)
+                      .WithMany(x => x.ChatbotHistories)
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(x => x.ProductSuggested)
+                      .WithMany(x => x.ChatbotHistories)
+                      .HasForeignKey(x => x.ProductIdSuggested)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+        }
+    }
+}
