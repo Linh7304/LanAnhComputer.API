@@ -6,7 +6,7 @@ namespace LanAnhComputer.Web.Controllers
 {
     public class AdminController:Controller
     {
-        [Route("")]
+        [Route("admin")]
         [Route("dashboard")]
         public IActionResult Index()
         {
