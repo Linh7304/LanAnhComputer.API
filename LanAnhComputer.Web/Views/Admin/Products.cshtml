@@ -1,0 +1,247 @@
+﻿@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    ViewData["ActivePage"] = "Products";
+    Layout = "_AdminLayout";
+}
+
+<!-- Header Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <div class="relative">
+            <input type="text" placeholder="Tìm kiếm sản phẩm..." class="w-80 pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+        </div>
+        <select class="px-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            <option value="">Tất cả danh mục</option>
+            <option>Laptop</option>
+            <option>PC - Máy bàn</option>
+            <option>Linh kiện</option>
+            <option>Gaming Gear</option>
+            <option>Phụ kiện</option>
+        </select>
+        <select class="px-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            <option value="">Trạng thái</option>
+            <option>Còn hàng</option>
+            <option>Hết hàng</option>
+            <option>Ngừng kinh doanh</option>
+        </select>
+    </div>
+    <button onclick="openAddModal()" class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Thêm sản phẩm
+    </button>
+</div>
+
+<!-- Products Table -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="w-12 px-4 py-3">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300" onchange="toggleSelectAll(this)" />
+                    </th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Sản phẩm</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">SKU</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Danh mục</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Giá</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Tồn kho</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Trạng thái</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @{
+                    var products = new[] {
+                        new { Id = 1, Name = "ASUS ROG Strix G15", SKU = "LAC-LT-001", Category = "Laptop Gaming", Price = 32990000, Stock = 25, Status = "active" },
+                        new { Id = 2, Name = "Lenovo IdeaPad Slim 5", SKU = "LAC-LT-002", Category = "Laptop Văn phòng", Price = 18990000, Stock = 42, Status = "active" },
+                        new { Id = 3, Name = "MSI Katana GF66", SKU = "LAC-LT-003", Category = "Laptop Gaming", Price = 25990000, Stock = 0, Status = "outofstock" },
+                        new { Id = 4, Name = "Dell XPS 15", SKU = "LAC-LT-004", Category = "Laptop Cao cấp", Price = 45990000, Stock = 8, Status = "active" },
+                        new { Id = 5, Name = "HP Victus 16", SKU = "LAC-LT-005", Category = "Laptop Gaming", Price = 22990000, Stock = 15, Status = "active" },
+                        new { Id = 6, Name = "Chuột Logitech G502 X", SKU = "LAC-GG-001", Category = "Gaming Gear", Price = 3290000, Stock = 0, Status = "outofstock" },
+                        new { Id = 7, Name = "Bàn phím Corsair K70", SKU = "LAC-GG-002", Category = "Gaming Gear", Price = 4590000, Stock = 18, Status = "active" },
+                        new { Id = 8, Name = "CPU Intel Core i7-14700K", SKU = "LAC-LK-001", Category = "Linh kiện", Price = 11990000, Stock = 30, Status = "active" }
+                    };
+                }
+                
+                @foreach (var product in products)
+                {
+                    var statusClass = product.Status == "active" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
+                    var statusText = product.Status == "active" ? "Đang bán" : "Hết hàng";
+                    
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-4">
+                            <input type="checkbox" class="product-checkbox w-4 h-4 rounded border-slate-300" />
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img src="https://placehold.co/50x50/e2e8f0/64748b?text=SP" alt="@product.Name" class="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <p class="font-medium text-slate-800">@product.Name</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-slate-600">@product.SKU</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">@product.Category</td>
+                        <td class="px-4 py-4 text-sm font-medium text-slate-800">@product.Price.ToString("N0")đ</td>
+                        <td class="px-4 py-4">
+                            <span class="text-sm @(product.Stock == 0 ? "text-red-600 font-medium" : product.Stock < 10 ? "text-orange-600" : "text-slate-600")">
+                                @product.Stock
+                            </span>
+                        </td>
+                        <td class="px-4 py-4">
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full @statusClass">@statusText</span>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="openEditModal(@product.Id)" class="p-2 hover:bg-slate-100 rounded-lg" title="Chỉnh sửa">
+                                    <i data-lucide="pencil" class="w-4 h-4 text-slate-500"></i>
+                                </button>
+                                <button onclick="duplicateProduct(@product.Id)" class="p-2 hover:bg-slate-100 rounded-lg" title="Nhân bản">
+                                    <i data-lucide="copy" class="w-4 h-4 text-slate-500"></i>
+                                </button>
+                                <button onclick="deleteProduct(@product.Id)" class="p-2 hover:bg-red-100 rounded-lg" title="Xóa">
+                                    <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200">
+        <p class="text-sm text-slate-500">Hiển thị 1-8 của 156 sản phẩm</p>
+        <div class="flex items-center gap-2">
+            <button class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50" disabled>
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button class="w-8 h-8 bg-primary-600 text-white rounded-lg text-sm font-medium">1</button>
+            <button class="w-8 h-8 border border-slate-300 rounded-lg hover:bg-slate-100 text-sm">2</button>
+            <button class="w-8 h-8 border border-slate-300 rounded-lg hover:bg-slate-100 text-sm">3</button>
+            <span class="text-slate-400">...</span>
+            <button class="w-8 h-8 border border-slate-300 rounded-lg hover:bg-slate-100 text-sm">20</button>
+            <button class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div id="productModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="closeModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-slate-200">
+            <h2 id="modalTitle" class="text-xl font-semibold text-slate-800">Thêm sản phẩm mới</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-slate-100 rounded-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <form class="p-6 space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tên sản phẩm *</label>
+                    <input type="text" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Nhập tên sản phẩm" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">SKU *</label>
+                    <input type="text" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="LAC-XX-000" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Danh mục *</label>
+                    <select class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white">
+                        <option value="">Chọn danh mục</option>
+                        <option>Laptop Gaming</option>
+                        <option>Laptop Văn phòng</option>
+                        <option>PC - Máy bàn</option>
+                        <option>Linh kiện</option>
+                        <option>Gaming Gear</option>
+                        <option>Phụ kiện</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Giá bán *</label>
+                    <input type="number" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Giá gốc</label>
+                    <input type="number" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Số lượng tồn kho *</label>
+                    <input type="number" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Thương hiệu</label>
+                    <input type="text" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="ASUS, Dell, HP..." />
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mô tả ngắn</label>
+                    <textarea rows="3" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none" placeholder="Mô tả ngắn về sản phẩm..."></textarea>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Hình ảnh</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-primary-500 transition-colors cursor-pointer">
+                        <i data-lucide="upload" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-600">Kéo thả hình ảnh vào đây hoặc <span class="text-primary-600">chọn file</span></p>
+                        <p class="text-xs text-slate-400 mt-1">PNG, JPG tối đa 5MB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors">
+                    Hủy
+                </button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                    Lưu sản phẩm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleSelectAll(checkbox) {
+            document.querySelectorAll('.product-checkbox').forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+        }
+    
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm sản phẩm mới';
+            document.getElementById('productModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+    
+        function openEditModal(id) {
+            document.getElementById('modalTitle').textContent = 'Chỉnh sửa sản phẩm';
+            document.getElementById('productModal').classList.remove('hidden');
+            // Load product data here
+            lucide.createIcons();
+        }
+    
+        function closeModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+    
+        function duplicateProduct(id) {
+            if (confirm('Bạn có muốn nhân bản sản phẩm này?')) {
+                alert('Đã nhân bản sản phẩm!');
+            }
+        }
+    
+        function deleteProduct(id) {
+            if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
+                alert('Đã xóa sản phẩm!');
+            }
+        }
+    </script>
+}

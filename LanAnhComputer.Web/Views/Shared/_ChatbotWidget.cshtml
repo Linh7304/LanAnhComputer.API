@@ -1,0 +1,199 @@
+﻿<!-- Chatbot Widget -->
+<div id="chatbot-widget" class="fixed bottom-6 right-6 z-50">
+    <!-- Chat Button -->
+    <button id="chatbot-toggle"
+            onclick="toggleChatbot()"
+            class="w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110">
+        <i data-lucide="message-circle" class="w-6 h-6" id="chat-icon-open"></i>
+        <i data-lucide="x" class="w-6 h-6 hidden" id="chat-icon-close"></i>
+    </button>
+    
+    <!-- Chat Window -->
+    <div id="chatbot-window" class="hidden absolute bottom-20 right-0 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i data-lucide="bot" class="w-6 h-6"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold">Trợ lý Lan Anh</h3>
+                    <p class="text-sm text-primary-100 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                        Đang hoạt động
+                    </p>
+                </div>
+                <button onclick="toggleChatbot()" class="p-1 hover:bg-white/20 rounded-lg transition-colors">
+                    <i data-lucide="minus" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div id="chat-messages" class="h-80 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            <!-- Welcome Message -->
+            <div class="flex gap-3">
+                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bot" class="w-4 h-4 text-primary-600"></i>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm text-slate-700">Xin chào! Tôi là trợ lý ảo của Lan Anh Computer. Tôi có thể giúp bạn:</p>
+                    <ul class="text-sm text-slate-600 mt-2 space-y-1">
+                        <li>• Tư vấn chọn mua sản phẩm</li>
+                        <li>• Kiểm tra tình trạng đơn hàng</li>
+                        <li>• Giải đáp thắc mắc về bảo hành</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex flex-wrap gap-2 pl-11">
+                <button onclick="sendQuickMessage('Tư vấn laptop cho sinh viên')"
+                        class="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-600 transition-colors">
+                    Laptop sinh viên
+                </button>
+                <button onclick="sendQuickMessage('PC gaming giá rẻ')"
+                        class="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-600 transition-colors">
+                    PC Gaming
+                </button>
+                <button onclick="sendQuickMessage('Kiểm tra đơn hàng')"
+                        class="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-600 transition-colors">
+                    Tra cứu đơn hàng
+                </button>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="p-4 bg-white border-t border-slate-200">
+            <form id="chat-form" onsubmit="sendMessage(event)" class="flex gap-2">
+                <input type="text"
+                       id="chat-input"
+                       placeholder="Nhập tin nhắn..."
+                       class="flex-1 px-4 py-2 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" />
+                <button type="submit"
+                        class="w-10 h-10 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center transition-colors">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleChatbot() {
+        const window = document.getElementById('chatbot-window');
+        const iconOpen = document.getElementById('chat-icon-open');
+        const iconClose = document.getElementById('chat-icon-close');
+        
+        window.classList.toggle('hidden');
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
+        
+        lucide.createIcons();
+    }
+    
+    function sendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        addMessage(message, 'user');
+        input.value = '';
+        
+        // Show typing indicator
+        showTyping();
+        
+        // Simulate bot response
+        setTimeout(() => {
+            hideTyping();
+            const response = getBotResponse(message);
+            addMessage(response, 'bot');
+        }, 1000);
+    }
+    
+    function sendQuickMessage(message) {
+        addMessage(message, 'user');
+        showTyping();
+        
+        setTimeout(() => {
+            hideTyping();
+            const response = getBotResponse(message);
+            addMessage(response, 'bot');
+        }, 1000);
+    }
+    
+    function addMessage(text, sender) {
+        const container = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex gap-3' + (sender === 'user' ? ' justify-end' : '');
+        
+        if (sender === 'user') {
+            messageDiv.innerHTML = `
+                <div class="bg-primary-600 text-white rounded-2xl rounded-tr-none p-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm">${text}</p>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bot" class="w-4 h-4 text-primary-600"></i>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm text-slate-700">${text}</p>
+                </div>
+            `;
+        }
+        
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+        lucide.createIcons();
+    }
+    
+    function showTyping() {
+        const container = document.getElementById('chat-messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'flex gap-3';
+        typingDiv.innerHTML = `
+            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4 text-primary-600"></i>
+            </div>
+            <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm">
+                <div class="flex gap-1">
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                </div>
+            </div>
+        `;
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
+        lucide.createIcons();
+    }
+    
+    function hideTyping() {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+    }
+    
+    function getBotResponse(message) {
+        const lowerMsg = message.toLowerCase();
+        
+        if (lowerMsg.includes('laptop') && lowerMsg.includes('sinh viên')) {
+            return 'Với sinh viên, tôi đề xuất các dòng laptop như: ASUS Vivobook (12-15 triệu), Acer Aspire (10-14 triệu), hoặc Lenovo IdeaPad (11-16 triệu). Bạn cần cấu hình như thế nào?';
+        }
+        if (lowerMsg.includes('pc') && lowerMsg.includes('gaming')) {
+            return 'Dạ, Lan Anh có nhiều cấu hình PC Gaming từ 15-50 triệu. Bạn cho tôi biết ngân sách và game bạn muốn chơi để tôi tư vấn cụ thể hơn nhé!';
+        }
+        if (lowerMsg.includes('đơn hàng') || lowerMsg.includes('tra cứu')) {
+            return 'Để kiểm tra đơn hàng, bạn vui lòng cung cấp mã đơn hàng hoặc số điện thoại đặt hàng. Hoặc bạn có thể truy cập mục "Theo dõi đơn hàng" ở đầu trang.';
+        }
+        if (lowerMsg.includes('bảo hành')) {
+            return 'Tất cả sản phẩm tại Lan Anh đều được bảo hành chính hãng. Laptop: 12-24 tháng, Linh kiện: 36 tháng, Phụ kiện: 6-12 tháng. Bạn cần hỗ trợ bảo hành sản phẩm nào?';
+        }
+        
+        return 'Cảm ơn bạn đã liên hệ! Để được tư vấn chi tiết hơn, bạn có thể gọi hotline 1900 1234 hoặc cho tôi biết cụ thể bạn cần hỗ trợ gì nhé!';
+    }
+</script>

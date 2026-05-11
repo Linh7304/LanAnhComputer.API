@@ -1,0 +1,100 @@
+﻿@model dynamic
+
+@{
+    var id = Model.Id;
+    var name = Model.Name;
+    var category = Model.Category;
+    var price = Model.Price;
+    var originalPrice = Model.OriginalPrice;
+    var rating = Model.Rating;
+    var reviews = Model.Reviews;
+    var badge = Model.Badge;
+    
+    var discount = originalPrice > 0 ? Math.Round((1 - (double)price / originalPrice) * 100) : 0;
+}
+
+<div class="group bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
+    <!-- Image -->
+    <div class="relative aspect-square bg-slate-100 overflow-hidden">
+        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=@Uri.EscapeDataString(name)"
+             alt="@name"
+             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        
+        @if (!string.IsNullOrEmpty(badge))
+        {
+            <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full
+                @(badge == "Hot" ? "bg-red-500 text-white" :
+                                    badge == "New" ? "bg-emerald-500 text-white" :
+                                    badge == "Sale" ? "bg-orange-500 text-white" : "bg-primary-500 text-white")">
+                @badge
+            </span>
+        }
+        
+        @if (discount > 0)
+        {
+            <span class="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
+                -@discount%
+            </span>
+        }
+        
+        <!-- Quick actions -->
+        <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="flex gap-2">
+                <button class="flex-1 py-2 bg-white text-slate-800 text-sm font-medium rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
+                    <i data-lucide="eye" class="w-4 h-4 inline mr-1"></i>
+                    Xem nhanh
+                </button>
+                <button class="p-2 bg-white text-slate-800 rounded-lg hover:bg-red-500 hover:text-white transition-colors">
+                    <i data-lucide="heart" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div class="p-4">
+        <p class="text-xs text-primary-600 font-medium mb-1">@category</p>
+        <h3 class="font-semibold text-slate-800 mb-2 line-clamp-2 min-h-[2.5rem]">@name</h3>
+        
+        <!-- Rating -->
+        <div class="flex items-center gap-1 mb-2">
+            <div class="flex text-amber-400">
+                @for (int i = 0; i < 5; i++)
+                {
+                    if (i < Math.Floor(rating))
+                    {
+                        <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                    }
+                    else
+                    {
+                        <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                    }
+                }
+            </div>
+            <span class="text-xs text-slate-500">(@reviews)</span>
+        </div>
+        
+        <!-- Price -->
+        <div class="flex items-baseline gap-2 mb-3">
+            <span class="text-lg font-bold text-red-600">@price.ToString("N0")đ</span>
+            @if (originalPrice > 0)
+            {
+                <span class="text-sm text-slate-400 line-through">@originalPrice.ToString("N0")đ</span>
+            }
+        </div>
+        
+        <!-- Add to cart button -->
+        <button onclick="addToCart(@id)"
+                class="w-full py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            Thêm vào giỏ
+        </button>
+    </div>
+</div>
+
+<script>
+    function addToCart(productId) {
+        // Add to cart logic
+        alert('Đã thêm sản phẩm vào giỏ hàng!');
+    }
+</script>

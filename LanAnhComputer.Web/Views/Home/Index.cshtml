@@ -1,0 +1,445 @@
+﻿@using LanAnhComputer.Web.ViewModels
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+
+<!-- Hero Slider -->
+<section class="relative">
+    <div id="hero-slider" class="relative overflow-hidden">
+        <div id="slider-track" class="flex transition-transform duration-500 ease-out">
+            <!-- Slide 1 -->
+            <div class="w-full flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+                <div class="container mx-auto px-4 py-16 md:py-24">
+                    <div class="max-w-2xl">
+                        <span class="inline-block px-4 py-1 bg-white/20 rounded-full text-sm font-medium mb-4">
+                            Khuyến mãi tháng 5
+                        </span>
+                        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-balance">
+                            Giảm đến 30% Laptop Gaming
+                        </h2>
+                        <p class="text-lg text-primary-100 mb-6">
+                            Sở hữu ngay laptop gaming hiệu năng cao với giá ưu đãi chưa từng có. Trả góp 0% lãi suất.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="/san-pham?category=gaming" class="px-6 py-3 bg-white text-primary-600 font-semibold rounded-lg hover:bg-primary-50 transition-colors">
+                                Mua ngay
+                            </a>
+                            <a href="#" class="px-6 py-3 border border-white/50 text-white font-semibold rounded-lg hover:bg-white/10 transition-colors">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 2 -->
+            <div class="w-full flex-shrink-0 bg-gradient-to-r from-slate-800 to-slate-900 text-white">
+                <div class="container mx-auto px-4 py-16 md:py-24">
+                    <div class="max-w-2xl">
+                        <span class="inline-block px-4 py-1 bg-orange-500 rounded-full text-sm font-medium mb-4">
+                            Mới ra mắt
+                        </span>
+                        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-balance">
+                            PC Build theo yêu cầu
+                        </h2>
+                        <p class="text-lg text-slate-300 mb-6">
+                            Đội ngũ kỹ thuật chuyên nghiệp sẽ tư vấn và lắp ráp PC theo đúng nhu cầu của bạn.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="/san-pham?category=pc" class="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors">
+                                Tư vấn ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 3 -->
+            <div class="w-full flex-shrink-0 bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
+                <div class="container mx-auto px-4 py-16 md:py-24">
+                    <div class="max-w-2xl">
+                        <span class="inline-block px-4 py-1 bg-white/20 rounded-full text-sm font-medium mb-4">
+                            Ưu đãi đặc biệt
+                        </span>
+                        <h2 class="text-3xl md:text-5xl font-bold mb-4 text-balance">
+                            Linh kiện chính hãng
+                        </h2>
+                        <p class="text-lg text-emerald-100 mb-6">
+                            Bảo hành 36 tháng. Đổi mới trong 30 ngày nếu có lỗi từ nhà sản xuất.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="/san-pham?category=linh-kien" class="px-6 py-3 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors">
+                                Khám phá
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slider Controls -->
+        <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+        <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+        
+        <!-- Dots -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <button onclick="goToSlide(0)" class="slider-dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-colors" data-index="0"></button>
+            <button onclick="goToSlide(1)" class="slider-dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-colors" data-index="1"></button>
+            <button onclick="goToSlide(2)" class="slider-dot w-3 h-3 rounded-full bg-white/50 hover:bg-white transition-colors" data-index="2"></button>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center">Danh mục sản phẩm</h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- Laptop -->
+            <a href="/san-pham?category=laptop" class="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="laptop" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-semibold text-slate-800">Laptop</h3>
+                <p class="text-sm text-slate-500">150+ sản phẩm</p>
+            </a>
+            
+            <!-- PC -->
+            <a href="/san-pham?category=pc" class="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="monitor" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-semibold text-slate-800">PC - Máy bàn</h3>
+                <p class="text-sm text-slate-500">80+ sản phẩm</p>
+            </a>
+            
+            <!-- Linh kien -->
+            <a href="/san-pham?category=linh-kien" class="group p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="cpu" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-semibold text-slate-800">Linh kiện</h3>
+                <p class="text-sm text-slate-500">500+ sản phẩm</p>
+            </a>
+            
+            <!-- Gaming -->
+            <a href="/san-pham?category=gaming" class="group p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="gamepad-2" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-semibold text-slate-800">Gaming Gear</h3>
+                <p class="text-sm text-slate-500">200+ sản phẩm</p>
+            </a>
+            
+            <!-- Phu kien -->
+            <a href="/san-pham?category=phu-kien" class="group p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="headphones" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-semibold text-slate-800">Phụ kiện</h3>
+                <p class="text-sm text-slate-500">300+ sản phẩm</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Promo Banner -->
+<section class="py-8">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 md:p-8">
+                <div class="relative z-10">
+                    <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-3">Flash Sale</span>
+                    <h3 class="text-2xl font-bold mb-2">Giảm đến 50%</h3>
+                    <p class="text-orange-100 mb-4">Chỉ còn 2 ngày</p>
+                    <a href="/khuyen-mai" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-orange-600 font-semibold rounded-lg hover:bg-orange-50 transition-colors">
+                        Xem ngay
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                <div class="absolute right-0 bottom-0 opacity-20">
+                    <i data-lucide="zap" class="w-32 h-32"></i>
+                </div>
+            </div>
+            
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white p-6 md:p-8">
+                <div class="relative z-10">
+                    <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-3">Trả góp 0%</span>
+                    <h3 class="text-2xl font-bold mb-2">Mua trước trả sau</h3>
+                    <p class="text-primary-100 mb-4">Duyệt nhanh trong 5 phút</p>
+                    <a href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-primary-600 font-semibold rounded-lg hover:bg-primary-50 transition-colors">
+                        Tìm hiểu thêm
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                <div class="absolute right-0 bottom-0 opacity-20">
+                    <i data-lucide="credit-card" class="w-32 h-32"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-slate-800">Sản phẩm nổi bật</h2>
+            <div class="flex gap-2">
+                <button onclick="setProductTab('hot')" class="product-tab px-4 py-2 rounded-lg font-medium transition-colors bg-primary-600 text-white" data-tab="hot">
+                    Bán chạy
+                </button>
+                <button onclick="setProductTab('new')" class="product-tab px-4 py-2 rounded-lg font-medium transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200" data-tab="new">
+                    Mới nhất
+                </button>
+                <button onclick="setProductTab('sale')" class="product-tab px-4 py-2 rounded-lg font-medium transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200" data-tab="sale">
+                    Giảm giá
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 1,
+                Name = "ASUS ROG Strix G15",
+                Category = "Laptop Gaming",
+                Price = 32990000,
+                OriginalPrice = 38990000,
+                Rating = 4.8,
+                Reviews = 156,
+                Badge = "Hot"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 2,
+                Name = "Lenovo IdeaPad Slim 5",
+                Category = "Laptop Văn phòng",
+                Price = 18990000,
+                OriginalPrice = 0,
+                Rating = 4.5,
+                Reviews = 89,
+                Badge = ""
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 3,
+                Name = "MSI Katana GF66",
+                Category = "Laptop Gaming",
+                Price = 25990000,
+                OriginalPrice = 29990000,
+                Rating = 4.7,
+                Reviews = 124,
+                Badge = "Sale"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 4,
+                Name = "Dell XPS 15",
+                Category = "Laptop Cao cấp",
+                Price = 45990000,
+                OriginalPrice = 0,
+                Rating = 4.9,
+                Reviews = 67,
+                Badge = "New"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 5,
+                Name = "HP Victus 16",
+                Category = "Laptop Gaming",
+                Price = 22990000,
+                OriginalPrice = 26990000,
+                Rating = 4.6,
+                Reviews = 98,
+                Badge = ""
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 6,
+                Name = "Acer Nitro 5",
+                Category = "Laptop Gaming",
+                Price = 19990000,
+                OriginalPrice = 23990000,
+                Rating = 4.4,
+                Reviews = 203,
+                Badge = "Hot"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 7,
+                Name = "MacBook Air M3",
+                Category = "Laptop Apple",
+                Price = 27990000,
+                OriginalPrice = 0,
+                Rating = 4.9,
+                Reviews = 312,
+                Badge = "New"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 8,
+                Name = "GIGABYTE G5",
+                Category = "Laptop Gaming",
+                Price = 21990000,
+                OriginalPrice = 24990000,
+                Rating = 4.5,
+                Reviews = 78,
+                Badge = "Sale"
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 9,
+                Name = "ThinkPad X1 Carbon",
+                Category = "Laptop Doanh nhân",
+                Price = 38990000,
+                OriginalPrice = 0,
+                Rating = 4.8,
+                Reviews = 45,
+                Badge = ""
+            })
+            
+            @await Html.PartialAsync("_ProductCard", new
+            {
+                Id = 10,
+                Name = "ROG Zephyrus G14",
+                Category = "Laptop Gaming",
+                Price = 35990000,
+                OriginalPrice = 41990000,
+                Rating = 4.9,
+                Reviews = 189,
+                Badge = "Hot"
+            })
+
+           
+           
+          
+        </div>
+        
+        <div class="text-center mt-8">
+            <a href="/san-pham" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
+                Xem tất cả sản phẩm
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="py-12 bg-slate-100">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="flex items-center gap-4 p-4 bg-white rounded-xl">
+                <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="truck" class="w-6 h-6 text-primary-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800">Giao hàng miễn phí</h4>
+                    <p class="text-sm text-slate-500">Đơn từ 500K</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 p-4 bg-white rounded-xl">
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800">Bảo hành chính hãng</h4>
+                    <p class="text-sm text-slate-500">Lên đến 36 tháng</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 p-4 bg-white rounded-xl">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="rotate-ccw" class="w-6 h-6 text-orange-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800">Đổi trả dễ dàng</h4>
+                    <p class="text-sm text-slate-500">Trong 30 ngày</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 p-4 bg-white rounded-xl">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="headset" class="w-6 h-6 text-purple-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800">Hỗ trợ 24/7</h4>
+                    <p class="text-sm text-slate-500">Hotline 1900 1234</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Slider
+        let currentSlide = 0;
+        const totalSlides = 3;
+    
+        function updateSlider() {
+            const track = document.getElementById('slider-track');
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+            document.querySelectorAll('.slider-dot').forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.classList.remove('bg-white/50');
+                    dot.classList.add('bg-white');
+                } else {
+                    dot.classList.remove('bg-white');
+                    dot.classList.add('bg-white/50');
+                }
+            });
+        }
+    
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+        }
+    
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+    
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+        }
+    
+        // Auto slide
+        setInterval(nextSlide, 5000);
+    
+        // Product tabs
+        function setProductTab(tab) {
+            document.querySelectorAll('.product-tab').forEach(btn => {
+                if (btn.dataset.tab === tab) {
+                    btn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                    btn.classList.add('bg-primary-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-primary-600', 'text-white');
+                    btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                }
+            });
+            // Here you would fetch/filter products based on tab
+        }
+    
+        // Initialize
+        updateSlider();
+    </script>
+}

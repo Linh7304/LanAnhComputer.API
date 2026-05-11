@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="vi" class="bg-slate-50">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Lan Anh Computer</title>
+    <meta name="description" content="Cửa hàng máy tính uy tín hàng đầu Việt Nam. Chuyên cung cấp Laptop, PC, Linh kiện chính hãng với giá tốt nhất." />
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+        theme: {
+        extend: {
+        colors: {
+        primary: {
+        50: '#eff6ff',
+        100: '#dbeafe',
+        200: '#bfdbfe',
+        300: '#93c5fd',
+        400: '#60a5fa',
+        500: '#3b82f6',
+        600: '#2563eb',
+        700: '#1d4ed8',
+        800: '#1e40af',
+        900: '#1e3a8a',
+        }
+        }
+        }
+        }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        }
+    </style>
+    
+    @RenderSection("Styles", required: false)
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <!-- Top Bar -->
+        <div class="bg-primary-600 text-white text-sm py-2">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1">
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        Hotline: 1900 1234
+                    </span>
+                    <span class="hidden md:flex items-center gap-1">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        support@lananh.com
+                    </span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="hover:underline">Theo dõi đơn hàng</a>
+                    <a href="#" class="hover:underline">Trung tâm bảo hành</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Header -->
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between gap-4">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="monitor" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-primary-600">Lan Anh</h1>
+                        <p class="text-xs text-slate-500">Computer</p>
+                    </div>
+                </a>
+                
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-2xl hidden md:block">
+                    <div class="relative">
+                        <input type="text"
+                               placeholder="Tìm kiếm laptop, PC, linh kiện..."
+                               class="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                        <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="flex items-center gap-3">
+                      
+                    <a href="javascript:void(0)"
+                           onclick="handleCartClick()"
+                           class="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 text-slate-700"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                     </a>
+                    <a href="#" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i data-lucide="heart" class="w-6 h-6 text-slate-700"></i>
+                    </a>
+                    <button id="authButton"
+                            onclick="handleAuthButton()"
+                            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+
+                        <i data-lucide="user" class="w-5 h-5"></i>
+
+                        <span id="authButtonText" class="hidden sm:inline">
+                            Đăng nhập
+                        </span>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="bg-slate-50 border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <ul class="flex items-center gap-1 overflow-x-auto py-2">
+                    <li>
+                        <a href="/san-pham?category=laptop" class="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-white hover:text-primary-600 rounded-lg transition-colors whitespace-nowrap">
+                            <i data-lucide="laptop" class="w-5 h-5"></i>
+                            Laptop
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/san-pham?category=pc" class="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-white hover:text-primary-600 rounded-lg transition-colors whitespace-nowrap">
+                            <i data-lucide="monitor" class="w-5 h-5"></i>
+                            PC - Máy tính bàn
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/san-pham?category=linh-kien" class="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-white hover:text-primary-600 rounded-lg transition-colors whitespace-nowrap">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                            Linh kiện
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/san-pham?category=gaming" class="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-white hover:text-primary-600 rounded-lg transition-colors whitespace-nowrap">
+                            <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+                            Gaming Gear
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/san-pham?category=phu-kien" class="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-white hover:text-primary-600 rounded-lg transition-colors whitespace-nowrap">
+                            <i data-lucide="headphones" class="w-5 h-5"></i>
+                            Phụ kiện
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/khuyen-mai" class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap font-medium">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                            Khuyến mãi HOT
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1">
+        @RenderBody()
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="monitor" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Lan Anh</h3>
+                            <p class="text-xs text-slate-400">Computer</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-4">
+                        Cửa hàng máy tính uy tín hàng đầu Việt Nam. Chuyên cung cấp Laptop, PC, Linh kiện chính hãng với giá tốt nhất.
+                    </p>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-primary-600 transition-colors">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-primary-600 transition-colors">
+                            <i data-lucide="youtube" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-primary-600 transition-colors">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Giới thiệu</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Hệ thống cửa hàng</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Tuyển dụng</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Liên hệ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Hỗ trợ khách hàng</h4>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Chính sách đổi trả</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Chính sách bảo hành</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Phương thức thanh toán</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Chính sách vận chuyển</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Liên hệ</h4>
+                    <ul class="space-y-3 text-slate-400">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5"></i>
+                            <span>123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="phone" class="w-5 h-5 text-primary-500 flex-shrink-0"></i>
+                            <span>1900 1234</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="mail" class="w-5 h-5 text-primary-500 flex-shrink-0"></i>
+                            <span>support@lananh.com</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="clock" class="w-5 h-5 text-primary-500 flex-shrink-0"></i>
+                            <span>8:00 - 21:00 (T2 - CN)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400 text-sm">
+                <p>&copy; 2024 Lan Anh Computer. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login/Register Modal -->
+    <!-- Auth Modal -->
+    @await Html.PartialAsync("_AuthModal")
+   
+    
+    <!-- Chatbot Widget -->
+    @await Html.PartialAsync("_ChatbotWidget")
+    
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    <!-- Auth Script -->
+    <script>
+        let currentMode = 'login';
+
+        // Mở modal
+        function openAuthModal(mode = 'login') {
+        currentMode = mode;
+
+        const modal = document.getElementById('authModal');
+        const title = document.getElementById('authModalTitle');
+        const registerFields = document.getElementById('registerFields');
+        const submitBtn = document.getElementById('authSubmitBtn');
+        const switchArea = document.getElementById('switchArea');
+
+        modal.classList.remove('hidden');
+
+        if (mode === 'login') {
+        title.textContent = 'Đăng nhập';
+        submitBtn.textContent = 'Đăng nhập';
+
+        registerFields.classList.add('hidden');
+
+        switchArea.innerHTML = `
+        Chưa có tài khoản?
+        <button type="button"
+        onclick="openAuthModal('register')"
+        class="text-primary-600 font-bold hover:underline">
+        Đăng ký ngay
+        </button>
+        `;
+        } else {
+        title.textContent = 'Đăng ký tài khoản';
+        submitBtn.textContent = 'Tạo tài khoản';
+
+        registerFields.classList.remove('hidden');
+
+        switchArea.innerHTML = `
+        Đã có tài khoản?
+        <button type="button"
+        onclick="openAuthModal('login')"
+        class="text-primary-600 font-bold hover:underline">
+        Đăng nhập
+        </button>
+        `;
+        }
+
+        lucide.createIcons();
+        }
+
+        // Đóng modal
+        function closeAuthModal() {
+        document.getElementById('authModal').classList.add('hidden');
+        }
+
+        // Submit form
+        async function handleAuthSubmit(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+
+        const payload = {
+        email,
+        password
+        };
+
+        // Nếu đăng ký thì thêm thông tin
+        if (currentMode === 'register') {
+        payload.fullName = document.getElementById('regFullName').value;
+        payload.phone = document.getElementById('regPhone').value;
+        }
+
+        // URL API
+        const url =
+        currentMode === 'login'
+        ? 'https://localhost:7132/api/Auth/login'
+        : 'https://localhost:7132/api/Auth/register';
+
+        try {
+        const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+        // Lưu token
+        if (data.token) {
+        localStorage.setItem('token', data.token);
+        }
+
+        if (data.role) {
+        localStorage.setItem('userRole', data.role);
+        }
+        updateAuthButton();
+        alert(
+        currentMode === 'login'
+        ? 'Đăng nhập thành công!'
+        : 'Đăng ký thành công!'
+        );
+
+        // Redirect
+        if (data.role === 'Admin') {
+        window.location.href = '/dashboard';
+        } else {
+        window.location.href = '/';
+        }
+
+        } else {
+        alert(data.message || 'Có lỗi xảy ra!');
+        }
+
+        } catch (error) {
+        console.error(error);
+        alert('Không thể kết nối tới server API');
+        }
+        }
+        // Kiểm tra trạng thái đăng nhập
+        function updateAuthButton() {
+
+        const token = localStorage.getItem('token');
+
+        const buttonText = document.getElementById('authButtonText');
+
+        if (token) {
+        buttonText.textContent = 'Đăng xuất';
+        } else {
+        buttonText.textContent = 'Đăng nhập';
+        }
+        }
+        function handleAuthButton() {
+
+        const token = localStorage.getItem('token');
+
+        // Nếu đã đăng nhập -> logout
+        if (token) {
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+
+        alert('Đã đăng xuất!');
+
+        updateAuthButton();
+
+        window.location.href = '/';
+
+        } else {
+
+        // Nếu chưa đăng nhập -> mở modal login
+        openAuthModal('login');
+        }
+        }
+            function handleCartClick() {
+
+            const token = localStorage.getItem('token');
+
+            // Chưa login
+            if (!token) {
+
+            openAuthModal('login');
+            return;
+            }
+
+            // Đã login
+            window.location.href = '/Cart';
+            }
+
+        // Khởi tạo trạng thái button khi tải trang
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthButton();
+        });
+
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="LanAnhComputer.API/LanAnhComputer.API.csproj" />
+  <Project Path="LanAnhComputer.Web/LanAnhComputer.Web.csproj" Id="6a7751e9-aff2-4f66-be5b-a8fbc5c36d94" />
 </Solution>

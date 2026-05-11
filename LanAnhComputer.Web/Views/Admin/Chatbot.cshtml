@@ -1,0 +1,400 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Chatbot";
+    ViewData["ActivePage"] = "Chatbot";
+    Layout = "_AdminLayout";
+}
+
+<!-- Tabs -->
+<div class="flex items-center gap-4 border-b border-slate-200 mb-6">
+    <button onclick="setTab('history')" class="chatbot-tab px-4 py-3 font-medium text-primary-600 border-b-2 border-primary-600" data-tab="history">
+        Lịch sử chat
+    </button>
+    <button onclick="setTab('templates')" class="chatbot-tab px-4 py-3 font-medium text-slate-500 hover:text-slate-700" data-tab="templates">
+        Câu trả lời mẫu
+    </button>
+    <button onclick="setTab('stats')" class="chatbot-tab px-4 py-3 font-medium text-slate-500 hover:text-slate-700" data-tab="stats">
+        Thống kê
+    </button>
+</div>
+
+<!-- History Tab -->
+<div id="tab-history" class="tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Conversations List -->
+        <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200">
+            <div class="p-4 border-b border-slate-200">
+                <div class="relative">
+                    <input type="text" placeholder="Tìm kiếm cuộc hội thoại..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                </div>
+            </div>
+            
+            <div class="max-h-[600px] overflow-y-auto">
+                @{
+                    var conversations = new[] {
+                        new { Id = 1, Customer = "Nguyễn Văn A", LastMsg = "Laptop nào phù hợp cho sinh viên?", Time = "5 phút trước", Unread = true },
+                        new { Id = 2, Customer = "Trần Thị B", LastMsg = "Cảm ơn bạn đã tư vấn!", Time = "30 phút trước", Unread = false },
+                        new { Id = 3, Customer = "Lê Văn C", LastMsg = "PC gaming 25 triệu có không?", Time = "1 giờ trước", Unread = false },
+                        new { Id = 4, Customer = "Phạm Thị D", LastMsg = "Bảo hành laptop bao lâu?", Time = "2 giờ trước", Unread = false },
+                        new { Id = 5, Customer = "Hoàng Văn E", LastMsg = "Có trả góp 0% không?", Time = "3 giờ trước", Unread = false },
+                        new { Id = 6, Customer = "Đỗ Thị F", LastMsg = "Đơn hàng LAC-2024001 đang ở đâu?", Time = "5 giờ trước", Unread = false }
+                    };
+                }
+                
+                @foreach (var conv in conversations)
+                {
+                    <button onclick="selectConversation(@conv.Id)" class="conversation-item w-full p-4 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 @(conv.Id == 1 ? "bg-primary-50" : "")">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-primary-600 font-semibold">@conv.Customer[0]</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="font-medium text-slate-800 truncate">@conv.Customer</p>
+                                    <span class="text-xs text-slate-400">@conv.Time</span>
+                                </div>
+                                <p class="text-sm text-slate-500 truncate">@conv.LastMsg</p>
+                            </div>
+                            @if (conv.Unread)
+                            {
+                                <span class="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></span>
+                            }
+                        </div>
+                    </button>
+                }
+            </div>
+        </div>
+        
+        <!-- Chat Detail -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 flex flex-col h-[650px]">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                        <span class="text-primary-600 font-semibold">N</span>
+                    </div>
+                    <div>
+                        <p class="font-medium text-slate-800">Nguyễn Văn A</p>
+                        <p class="text-sm text-slate-500">Khách vãng lai</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="p-2 hover:bg-slate-100 rounded-lg" title="Gắn tag">
+                        <i data-lucide="tag" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+                    <button class="p-2 hover:bg-slate-100 rounded-lg" title="Chuyển nhân viên">
+                        <i data-lucide="user-plus" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+                    <button class="p-2 hover:bg-slate-100 rounded-lg" title="Xem thông tin">
+                        <i data-lucide="info" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+                <!-- Customer message -->
+                <div class="flex justify-end">
+                    <div class="bg-primary-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[70%]">
+                        <p class="text-sm">Xin chào, tôi cần tư vấn laptop cho sinh viên</p>
+                        <p class="text-xs text-primary-200 mt-1 text-right">10:30</p>
+                    </div>
+                </div>
+                
+                <!-- Bot message -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="bot" class="w-4 h-4 text-primary-600"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[70%]">
+                        <p class="text-sm text-slate-700">Chào bạn! Tôi có thể giúp bạn tìm laptop phù hợp. Bạn cho tôi biết ngân sách và nhu cầu sử dụng chính (học tập, đồ họa, gaming...) nhé!</p>
+                        <p class="text-xs text-slate-400 mt-1">10:30</p>
+                    </div>
+                </div>
+                
+                <!-- Customer message -->
+                <div class="flex justify-end">
+                    <div class="bg-primary-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[70%]">
+                        <p class="text-sm">Ngân sách khoảng 15-20 triệu, chủ yếu học tập và code</p>
+                        <p class="text-xs text-primary-200 mt-1 text-right">10:32</p>
+                    </div>
+                </div>
+                
+                <!-- Bot message with products -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="bot" class="w-4 h-4 text-primary-600"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[70%]">
+                        <p class="text-sm text-slate-700 mb-3">Với nhu cầu học tập và code, tôi đề xuất các dòng laptop sau:</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                                <div class="w-10 h-10 bg-slate-200 rounded"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Lenovo IdeaPad Slim 5</p>
+                                    <p class="text-xs text-red-600 font-semibold">18.990.000đ</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                                <div class="w-10 h-10 bg-slate-200 rounded"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">ASUS Vivobook 15</p>
+                                    <p class="text-xs text-red-600 font-semibold">16.990.000đ</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">10:33</p>
+                    </div>
+                </div>
+                
+                <!-- Customer message -->
+                <div class="flex justify-end">
+                    <div class="bg-primary-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[70%]">
+                        <p class="text-sm">Laptop nào phù hợp cho sinh viên?</p>
+                        <p class="text-xs text-primary-200 mt-1 text-right">10:35</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input (Admin can respond) -->
+            <div class="p-4 border-t border-slate-200">
+                <div class="flex gap-2">
+                    <button class="p-2 hover:bg-slate-100 rounded-lg">
+                        <i data-lucide="paperclip" class="w-5 h-5 text-slate-500"></i>
+                    </button>
+                    <input type="text" placeholder="Nhập tin nhắn để can thiệp..." class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <button class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Gửi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Templates Tab -->
+<div id="tab-templates" class="tab-content hidden">
+    <div class="flex justify-between items-center mb-6">
+        <p class="text-slate-600">Cấu hình các câu trả lời tự động cho chatbot</p>
+        <button onclick="openTemplateModal()" class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Thêm mẫu
+        </button>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @{
+            var templates = new[] {
+                new { Id = 1, Trigger = "laptop sinh viên", Response = "Với sinh viên, tôi đề xuất các dòng laptop như: ASUS Vivobook (12-15 triệu), Acer Aspire (10-14 triệu), hoặc Lenovo IdeaPad (11-16 triệu).", Category = "Tư vấn sản phẩm" },
+                new { Id = 2, Trigger = "pc gaming", Response = "Dạ, Lan Anh có nhiều cấu hình PC Gaming từ 15-50 triệu. Bạn cho tôi biết ngân sách và game muốn chơi nhé!", Category = "Tư vấn sản phẩm" },
+                new { Id = 3, Trigger = "bảo hành", Response = "Tất cả sản phẩm tại Lan Anh đều được bảo hành chính hãng. Laptop: 12-24 tháng, Linh kiện: 36 tháng, Phụ kiện: 6-12 tháng.", Category = "Chính sách" },
+                new { Id = 4, Trigger = "đơn hàng, tra cứu", Response = "Để kiểm tra đơn hàng, vui lòng cung cấp mã đơn hàng hoặc số điện thoại đặt hàng.", Category = "Hỗ trợ" },
+                new { Id = 5, Trigger = "trả góp", Response = "Lan Anh hỗ trợ trả góp 0% lãi suất qua thẻ tín dụng và các công ty tài chính. Duyệt nhanh trong 5 phút!", Category = "Chính sách" },
+                new { Id = 6, Trigger = "giao hàng, ship", Response = "Miễn phí giao hàng cho đơn từ 500K. Giao hàng nhanh trong 2-4 giờ tại TP.HCM và Hà Nội.", Category = "Chính sách" }
+            };
+        }
+        
+        @foreach (var template in templates)
+        {
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+                <div class="flex items-start justify-between mb-3">
+                    <span class="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">@template.Category</span>
+                    <div class="flex gap-1">
+                        <button class="p-1 hover:bg-slate-100 rounded">
+                            <i data-lucide="pencil" class="w-4 h-4 text-slate-500"></i>
+                        </button>
+                        <button class="p-1 hover:bg-red-100 rounded">
+                            <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-slate-500 mb-1">Từ khóa kích hoạt:</p>
+                    <p class="text-sm font-medium text-slate-800">@template.Trigger</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 mb-1">Câu trả lời:</p>
+                    <p class="text-sm text-slate-600 line-clamp-3">@template.Response</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Stats Tab -->
+<div id="tab-stats" class="tab-content hidden">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                    <i data-lucide="message-square" class="w-6 h-6 text-primary-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Tổng cuộc hội thoại</p>
+                    <p class="text-2xl font-bold text-slate-800">1,234</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Tự động giải quyết</p>
+                    <p class="text-2xl font-bold text-slate-800">78%</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <i data-lucide="clock" class="w-6 h-6 text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Thời gian phản hồi TB</p>
+                    <p class="text-2xl font-bold text-slate-800">2.3s</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i data-lucide="star" class="w-6 h-6 text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Đánh giá hài lòng</p>
+                    <p class="text-2xl font-bold text-slate-800">4.5/5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <h3 class="font-semibold text-slate-800 mb-4">Số lượng chat theo ngày</h3>
+            <div class="h-64">
+                <canvas id="chatStatsChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <h3 class="font-semibold text-slate-800 mb-4">Chủ đề phổ biến</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Tư vấn laptop</span>
+                        <span class="font-medium">35%</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary-600 rounded-full" style="width: 35%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Tra cứu đơn hàng</span>
+                        <span class="font-medium">28%</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 rounded-full" style="width: 28%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Bảo hành & đổi trả</span>
+                        <span class="font-medium">20%</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-orange-500 rounded-full" style="width: 20%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Tư vấn PC/Linh kiện</span>
+                        <span class="font-medium">12%</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-purple-500 rounded-full" style="width: 12%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Khác</span>
+                        <span class="font-medium">5%</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-slate-400 rounded-full" style="width: 5%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.chatbot-tab').forEach(btn => {
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('text-primary-600', 'border-b-2', 'border-primary-600');
+                    btn.classList.remove('text-slate-500');
+                } else {
+                    btn.classList.remove('text-primary-600', 'border-b-2', 'border-primary-600');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+        
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+        
+            // Initialize chart if stats tab
+            if (tab === 'stats') {
+                initChatStatsChart();
+            }
+        }
+    
+        function selectConversation(id) {
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('bg-primary-50');
+            });
+            event.currentTarget.classList.add('bg-primary-50');
+            // Load conversation messages
+        }
+    
+        function openTemplateModal() {
+            alert('Mở modal thêm câu trả lời mẫu');
+        }
+    
+        function initChatStatsChart() {
+            const ctx = document.getElementById('chatStatsChart');
+            if (!ctx) return;
+        
+            new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [{
+                        label: 'Số lượng chat',
+                        data: [45, 52, 38, 65, 48, 30, 25],
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+}

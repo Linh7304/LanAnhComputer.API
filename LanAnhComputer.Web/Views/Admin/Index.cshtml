@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Tổng quan";
+    ViewData["ActivePage"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Revenue -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="w-6 h-6 text-primary-600"></i>
+            </div>
+            <span class="flex items-center gap-1 text-sm text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                <i data-lucide="trending-up" class="w-3 h-3"></i>
+                +12.5%
+            </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-1">Doanh thu tháng</p>
+        <p class="text-2xl font-bold text-slate-800">1.256.000.000đ</p>
+    </div>
+    
+    <!-- Orders -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="shopping-bag" class="w-6 h-6 text-emerald-600"></i>
+            </div>
+            <span class="flex items-center gap-1 text-sm text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                <i data-lucide="trending-up" class="w-3 h-3"></i>
+                +8.2%
+            </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-1">Đơn hàng</p>
+        <p class="text-2xl font-bold text-slate-800">324</p>
+    </div>
+    
+    <!-- Customers -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="users" class="w-6 h-6 text-purple-600"></i>
+            </div>
+            <span class="flex items-center gap-1 text-sm text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                <i data-lucide="trending-up" class="w-3 h-3"></i>
+                +5.4%
+            </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-1">Khách hàng mới</p>
+        <p class="text-2xl font-bold text-slate-800">156</p>
+    </div>
+    
+    <!-- Products -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="package" class="w-6 h-6 text-orange-600"></i>
+            </div>
+            <span class="flex items-center gap-1 text-sm text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                <i data-lucide="trending-down" class="w-3 h-3"></i>
+                -2.1%
+            </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-1">Sản phẩm hết hàng</p>
+        <p class="text-2xl font-bold text-slate-800">12</p>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Revenue Chart -->
+    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold text-slate-800">Doanh thu</h2>
+            <select class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option>7 ngày qua</option>
+                <option>30 ngày qua</option>
+                <option>3 tháng qua</option>
+                <option>12 tháng qua</option>
+            </select>
+        </div>
+        <div class="h-72">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Category Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 class="text-lg font-semibold text-slate-800 mb-6">Theo danh mục</h2>
+        <div class="h-72">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="bg-white rounded-xl border border-slate-200">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+        <h2 class="text-lg font-semibold text-slate-800">Đơn hàng gần đây</h2>
+        <a href="/admin/don-hang" class="text-primary-600 hover:text-primary-700 text-sm font-medium">Xem tất cả</a>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Mã đơn</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Khách hàng</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Sản phẩm</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Tổng tiền</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Trạng thái</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Ngày đặt</th>
+                    <th class="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @{
+                    var orders = new[] {
+                        new { Id = "LAC-2024001", Customer = "Nguyễn Văn A", Product = "ASUS ROG Strix G15", Total = 32990000, Status = "pending", Date = "09/05/2024" },
+                        new { Id = "LAC-2024002", Customer = "Trần Thị B", Product = "MacBook Air M3", Total = 27990000, Status = "processing", Date = "09/05/2024" },
+                        new { Id = "LAC-2024003", Customer = "Lê Văn C", Product = "Dell XPS 15 + Chuột", Total = 48990000, Status = "shipped", Date = "08/05/2024" },
+                        new { Id = "LAC-2024004", Customer = "Phạm Thị D", Product = "PC Gaming RTX 4070", Total = 35990000, Status = "delivered", Date = "08/05/2024" },
+                        new { Id = "LAC-2024005", Customer = "Hoàng Văn E", Product = "Laptop Lenovo IdeaPad", Total = 18990000, Status = "cancelled", Date = "07/05/2024" }
+                    };
+                }
+                
+                @foreach (var order in orders)
+                {
+                    var statusClass = order.Status switch
+                    {
+                        "pending" => "bg-yellow-100 text-yellow-700",
+                        "processing" => "bg-blue-100 text-blue-700",
+                        "shipped" => "bg-purple-100 text-purple-700",
+                        "delivered" => "bg-emerald-100 text-emerald-700",
+                        "cancelled" => "bg-red-100 text-red-700",
+                        _ => "bg-slate-100 text-slate-700"
+                    };
+                    var statusText = order.Status switch
+                    {
+                        "pending" => "Chờ xác nhận",
+                        "processing" => "Đang xử lý",
+                        "shipped" => "Đang giao",
+                        "delivered" => "Đã giao",
+                        "cancelled" => "Đã hủy",
+                        _ => order.Status
+                    };
+                    
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 text-sm font-medium text-primary-600">@order.Id</td>
+                        <td class="px-6 py-4 text-sm text-slate-800">@order.Customer</td>
+                        <td class="px-6 py-4 text-sm text-slate-600">@order.Product</td>
+                        <td class="px-6 py-4 text-sm font-medium text-slate-800">@order.Total.ToString("N0")đ</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full @statusClass">@statusText</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-500">@order.Date</td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="p-1 hover:bg-slate-100 rounded">
+                                <i data-lucide="more-horizontal" class="w-4 h-4 text-slate-400"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: [120, 190, 150, 220, 180, 250, 200],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' tr';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Laptop', 'PC', 'Linh kiện', 'Gaming Gear', 'Phụ kiện'],
+                datasets: [{
+                    data: [35, 25, 20, 12, 8],
+                    backgroundColor: [
+                        '#2563eb',
+                        '#7c3aed',
+                        '#10b981',
+                        '#f59e0b',
+                        '#6b7280'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
