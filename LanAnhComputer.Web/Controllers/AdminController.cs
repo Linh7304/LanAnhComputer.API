@@ -4,8 +4,15 @@ using System.Text.Json;
 
 namespace LanAnhComputer.Web.Controllers
 {
-    public class AdminController:Controller
+    public class AdminController : Controller
     {
+        private readonly HttpClient _httpClient;
+
+        public AdminController(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         [Route("admin")]
         [Route("dashboard")]
         public IActionResult Index()

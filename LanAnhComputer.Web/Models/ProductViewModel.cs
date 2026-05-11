@@ -2,7 +2,7 @@
 {
     public class ProductViewModel
     {
-        public int ProductId { get; set; }
+        public long ProductId { get; set; }
 
         public int CategoryId { get; set; }
 
@@ -31,5 +31,14 @@
         public string? ImageUrl { get; set; }
 
         public bool IsActive { get; set; }
+
+        // Additional properties for frontend display
+        public decimal? OriginalPrice { get; set; }
+
+        public double Rating { get; set; }
+
+        public int Reviews { get; set; }
+
+        public string? Badge { get; set; }
     }
 }
