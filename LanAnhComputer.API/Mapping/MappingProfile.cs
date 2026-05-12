@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using LanAnhComputer.API.Data.Entities;
+using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data.Entities;
 using LanAnhComputer.Dtos;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -24,5 +26,6 @@ public class MappingProfile : Profile
 
         CreateMap<ChatbotHistory, ChatbotHistoryDto>();
         CreateMap<ChatbotHistoryCreateDto, ChatbotHistory>();
+        CreateMap<CartDto, CartItem>();
     }
 }

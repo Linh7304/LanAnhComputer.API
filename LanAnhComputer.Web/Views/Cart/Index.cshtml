@@ -1,4 +1,6 @@
-﻿@{
+﻿@model List<LanAnhComputer.Web.ViewModels.CartItemViewModel>
+@using LanAnhComputer.Web.ViewModels
+@{
     ViewData["Title"] = "Giỏ hàng";
 }
 
@@ -26,28 +28,20 @@
                 
                 <!-- Cart Items -->
                 <div id="cart-items">
-                    @{
-                        var cartItems = new[] {
-                            new { Id = 1, Name = "ASUS ROG Strix G15 - Intel Core i7, RTX 4060, 16GB RAM", Price = 32990000, Quantity = 1, Image = "ASUS ROG" },
-                            new { Id = 2, Name = "Chuột Gaming Logitech G502 X Plus", Price = 3290000, Quantity = 2, Image = "Logitech G502" },
-                            new { Id = 3, Name = "Bàn phím cơ Corsair K70 RGB Pro", Price = 4590000, Quantity = 1, Image = "Corsair K70" }
-                        };
-                    }
-                    
-                    @foreach (var item in cartItems)
+                    @foreach (var item in Model)
                     {
-                        <div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-slate-100 last:border-0" data-id="@item.Id">
+                        <div class="cart-item grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-slate-100 last:border-0" data-id="@item.ProductId">
                             <!-- Product -->
                             <div class="col-span-6 flex gap-4">
                                 <div class="w-24 h-24 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                                    <img src="https://placehold.co/100x100/e2e8f0/64748b?text=@Uri.EscapeDataString(item.Image)"
-                                         alt="@item.Name"
+                                    <img src="https://placehold.co/100x100/e2e8f0/64748b?text=@Uri.EscapeDataString(item.Brand ?? "Product")"
+                                         alt="@item.ProductName"
                                          class="w-full h-full object-cover" />
                                 </div>
                                 <div class="flex-1">
-                                    <h3 class="font-medium text-slate-800 mb-1 line-clamp-2">@item.Name</h3>
-                                    <p class="text-sm text-slate-500 mb-2">SKU: LAC-00@item.Id</p>
-                                    <button onclick="removeItem(@item.Id)" class="text-sm text-red-500 hover:text-red-600 flex items-center gap-1">
+                                    <h3 class="font-medium text-slate-800 mb-1 line-clamp-2">@item.ProductName</h3>
+                                    <p class="text-sm text-slate-500 mb-2">SKU: LAC-00@item.ProductId</p>
+                                    <button onclick="removeItem(@item.ProductId)" class="text-sm text-red-500 hover:text-red-600 flex items-center gap-1">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         Xóa
                                     </button>
@@ -62,13 +56,13 @@
                             <!-- Quantity -->
                             <div class="col-span-2 flex items-center justify-center">
                                 <div class="flex items-center border border-slate-300 rounded-lg">
-                                    <button onclick="updateQuantity(@item.Id, -1)" class="p-2 hover:bg-slate-100 transition-colors">
+                                    <button onclick="updateQuantity(@item.ProductId, -1)" class="p-2 hover:bg-slate-100 transition-colors">
                                         <i data-lucide="minus" class="w-4 h-4"></i>
                                     </button>
                                     <input type="number" value="@item.Quantity" min="1"
                                            class="w-12 text-center border-x border-slate-300 py-2 focus:outline-none"
-                                           onchange="updateQuantityInput(@item.Id, this.value)" />
-                                    <button onclick="updateQuantity(@item.Id, 1)" class="p-2 hover:bg-slate-100 transition-colors">
+                                           onchange="updateQuantityInput(@item.ProductId, this.value)" />
+                                    <button onclick="updateQuantity(@item.ProductId, 1)" class="p-2 hover:bg-slate-100 transition-colors">
                                         <i data-lucide="plus" class="w-4 h-4"></i>
                                     </button>
                                 </div>
@@ -76,7 +70,7 @@
                             
                             <!-- Subtotal -->
                             <div class="col-span-2 flex items-center justify-end">
-                                <span class="text-red-600 font-bold">@((item.Price * item.Quantity).ToString("N0"))đ</span>
+                                <span class="text-red-600 font-bold">@item.TotalPrice.ToString("N0")đ</span>
                             </div>
                         </div>
                     }
@@ -157,20 +151,24 @@
 @section Scripts {
     <script>
         function removeItem(id) {
-            if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-                const item = document.querySelector(`.cart-item[data-id="${id}"]`);
-                item.remove();
-                updateTotals();
+                        fetch(`/api/cart/remove/${id}`, {
+            method: "DELETE"
+        }).then(() => location.reload());
             }
         }
     
         function updateQuantity(id, delta) {
-            const item = document.querySelector(`.cart-item[data-id="${id}"]`);
-            const input = item.querySelector('input[type="number"]');
-            let value = parseInt(input.value) + delta;
-            if (value < 1) value = 1;
-            input.value = value;
-            updateTotals();
+                     const input = document.querySelector(`.cart-item[data-id="${id}"] input`);
+        const newQty = parseInt(input.value) + delta;
+
+        fetch(`/api/cart/update`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                productId: id,
+                quantity: newQty
+            })
+        }).then(() => location.reload());
         }
     
         function updateQuantityInput(id, value) {

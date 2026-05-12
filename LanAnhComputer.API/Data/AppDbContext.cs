@@ -1,4 +1,5 @@
-﻿using LanAnhComputer.Data.Entities;
+﻿using LanAnhComputer.API.Data.Entities;
+using LanAnhComputer.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 // Connect Database và Sql Server thông qua Entity Framework Core (EF Core) 
 namespace LanAnhComputer.Data
@@ -12,6 +13,8 @@ namespace LanAnhComputer.Data
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
         public DbSet<ChatbotHistory> ChatbotHistories => Set<ChatbotHistory>();
+        public DbSet<Cart> Carts => Set<Cart>();
+        public DbSet<CartItem> CartItems => Set<CartItem>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -22,10 +25,10 @@ namespace LanAnhComputer.Data
                 entity.HasKey(x => x.CategoryId);
                 entity.Property(x => x.CategoryCode).HasMaxLength(30).IsUnicode(false).IsRequired();
                 entity.Property(x => x.CategoryName).HasMaxLength(150).IsRequired();
-                entity.Property(x => x.Description).HasMaxLength(500);
+                entity.Property(x => x.Description).HasMaxLength(500); //định dạng kiểu dữ liệu HasMaxLength(255), IsUnicode(false) (biến string thành varchar thay vì nvarchar)
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
                 entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
-                entity.HasIndex(x => x.CategoryCode).IsUnique();
+                entity.HasIndex(x => x.CategoryCode).IsUnique(); // đảm bảo mã danh mục không trùng lặp (duy nhất)
                 entity.HasOne(x => x.ParentCategory)
                       .WithMany(x => x.ChildCategories)
                       .HasForeignKey(x => x.ParentCategoryId)
@@ -36,7 +39,7 @@ namespace LanAnhComputer.Data
             {
                 entity.ToTable("Users");
                 entity.HasKey(x => x.UserId);
-                entity.Property(x => x.FullName).HasMaxLength(150).IsRequired();
+                entity.Property(x => x.FullName).HasMaxLength(150).IsRequired(); // Tương ứng với not null trong SQL Server
                 entity.Property(x => x.Email).HasMaxLength(255).IsUnicode(false).IsRequired();
                 entity.Property(x => x.Phone).HasMaxLength(20).IsUnicode(false);
                 entity.Property(x => x.PasswordHash).HasMaxLength(255).IsUnicode(false).IsRequired();
@@ -152,6 +155,57 @@ namespace LanAnhComputer.Data
                       .WithMany(x => x.ChatbotHistories)
                       .HasForeignKey(x => x.ProductIdSuggested)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+            // Cart
+            modelBuilder.Entity<Cart>(entity =>
+            {
+                entity.ToTable("Carts");
+                entity.HasKey(x => x.CartId);
+
+                entity.Property(x => x.CreatedAt)
+                      .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.Property(x => x.UpdatedAt)
+                      .IsRequired(false);
+
+                entity.HasIndex(x => x.UserId).IsUnique(); // 1 user = 1 cart
+
+                entity.HasOne(x => x.User)
+                      .WithOne()
+                      .HasForeignKey<Cart>(x => x.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // CartItem
+            modelBuilder.Entity<CartItem>(entity =>
+            {
+                entity.ToTable("CartItems");
+                entity.HasKey(x => x.CartItemId);
+
+                entity.Property(x => x.Quantity)
+                      .HasDefaultValue(1);
+
+                entity.Property(x => x.CreatedAt)
+                      .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.Property(x => x.UpdatedAt)
+                      .IsRequired(false);
+
+                entity.HasIndex(x => x.CartId);
+                entity.HasIndex(x => x.ProductId);
+
+                entity.HasIndex(x => new { x.CartId, x.ProductId })
+                      .IsUnique();
+
+                entity.HasOne(x => x.Cart)
+                      .WithMany(x => x.CartItems)
+                      .HasForeignKey(x => x.CartId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Product)
+                      .WithMany()
+                      .HasForeignKey(x => x.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

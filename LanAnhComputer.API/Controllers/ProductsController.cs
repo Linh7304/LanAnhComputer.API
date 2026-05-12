@@ -37,7 +37,7 @@ public class ProductsController(AppDbContext dbContext, IMapper mapper) : Contro
         var totalItems = await query.CountAsync();
 
         var result = await query
-            .OrderBy(x => x.ProductName)
+            .OrderBy(x => x.ProductId)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ProjectTo<ProductDto>(mapper.ConfigurationProvider)

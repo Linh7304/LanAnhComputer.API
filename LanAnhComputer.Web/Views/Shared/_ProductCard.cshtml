@@ -91,14 +91,60 @@
         <button onclick="addToCart(@id)"
                 class="w-full py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2">
             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-            Thêm vào giỏ
+            Thêm vào giỏ hàng
         </button>
     </div>
 </div>
 
 <script>
-    function addToCart(productId) {
-        // Add to cart logic
-        alert('Đã thêm sản phẩm vào giỏ hàng!');
-    }
+    window.addToCart = async function (productId) {
+
+        console.log("===== ADD TO CART DEBUG =====");
+        console.log("productId type:", typeof productId);
+        console.log("productId value:", productId);
+
+        // Check nếu sai kiểu
+        if (!productId || isNaN(productId)) {
+            console.error("❌ productId KHÔNG HỢP LỆ:", productId);
+            alert("Sai productId");
+            return;
+        }
+
+        const dto = {
+            userId: 2,
+            productId: Number(productId), // ép kiểu rõ ràng
+            quantity: 1
+        };
+
+        console.log("📦 DTO gửi đi:", dto);
+
+        try {
+            const response = await fetch("https://localhost:7132/api/cart/add", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(dto)
+            });
+
+            console.log("📡 Status:", response.status);
+
+            const text = await response.text();
+            console.log("📥 Response body:", text);
+
+            if (!response.ok) {
+                console.error("❌ API ERROR:", text);
+                alert("Thêm thất bại!");
+                return;
+            }
+
+            console.log("✅ SUCCESS");
+            alert("Thêm vào giỏ hàng thành công!");
+
+        } catch (err) {
+            console.error("🔥 NETWORK ERROR:", err);
+            alert("Không gọi được API!");
+        }
+    };
 </script>
