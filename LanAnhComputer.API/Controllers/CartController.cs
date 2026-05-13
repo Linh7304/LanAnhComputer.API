@@ -2,8 +2,10 @@
 using LanAnhComputer.API.Data.Entities;
 using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 namespace LanAnhComputer.Controllers
@@ -13,16 +15,22 @@ namespace LanAnhComputer.Controllers
     public class CartController(AppDbContext dbContext, IMapper mapper) : ControllerBase
     {
         // GET CART
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetCart(long userId)
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCart()
         {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!long.TryParse(userIdValue, out var userId))
+                return Unauthorized();
+
             var cart = await dbContext.Carts
                 .Include(x => x.CartItems)
                 .ThenInclude(x => x.Product)
                 .FirstOrDefaultAsync(x => x.UserId == userId);
 
             if (cart == null)
-                return Ok(new List<CartItem>());
+                return Ok(new List<object>());
 
             var result = cart.CartItems.Select(x => new
             {
@@ -36,24 +44,37 @@ namespace LanAnhComputer.Controllers
             });
 
             return Ok(result);
+
         }
 
         // ADD TO CART
+        [Authorize]
         [HttpPost("add")]
         public async Task<IActionResult> AddToCart(CartDto dto)
         {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!long.TryParse(userIdValue, out var userId))
+                return Unauthorized();
+
             var cart = await dbContext.Carts
-                .FirstOrDefaultAsync(x => x.UserId == dto.UserId);
+                .FirstOrDefaultAsync(x => x.UserId == userId);
 
             if (cart == null)
             {
-                cart = new Cart { UserId = dto.UserId };
+                cart = new Cart
+                {
+                    UserId = userId
+                };
+
                 dbContext.Carts.Add(cart);
                 await dbContext.SaveChangesAsync();
             }
 
             var item = await dbContext.CartItems
-                .FirstOrDefaultAsync(x => x.CartId == cart.CartId && x.ProductId == dto.ProductId);
+                .FirstOrDefaultAsync(x =>
+                    x.CartId == cart.CartId &&
+                    x.ProductId == dto.ProductId);
 
             if (item != null)
             {
@@ -65,7 +86,7 @@ namespace LanAnhComputer.Controllers
                 var newItem = mapper.Map<CartItem>(dto);
 
                 newItem.CartId = cart.CartId;
-                newItem.CreatedAt = DateTime.UtcNow; // thêm nếu entity có
+                newItem.CreatedAt = DateTime.UtcNow;
                 newItem.UpdatedAt = DateTime.UtcNow;
 
                 dbContext.CartItems.Add(newItem);
@@ -73,15 +94,32 @@ namespace LanAnhComputer.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Added to cart successfully" });
+            return Ok(new
+            {
+                message = "Added to cart successfully"
+            });
         }
         // UPDATE QUANTITY
         // =========================
+        [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateQuantity([FromBody] UpdateCartDto dto)
+        public async Task<IActionResult> UpdateQuantity(UpdateCartDto dto)
         {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!long.TryParse(userIdValue, out var userId))
+                return Unauthorized();
+
+            var cart = await dbContext.Carts
+                .FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (cart == null)
+                return NotFound();
+
             var item = await dbContext.CartItems
-                .FirstOrDefaultAsync(x => x.ProductId == dto.ProductId);
+                .FirstOrDefaultAsync(x =>
+                    x.CartId == cart.CartId &&
+                    x.ProductId == dto.ProductId);
 
             if (item == null)
                 return NotFound();
@@ -93,23 +131,40 @@ namespace LanAnhComputer.Controllers
 
             return Ok(new { message = "Updated" });
         }
-
         // =========================
         // REMOVE ITEM
         // =========================
+        [Authorize]
         [HttpDelete("remove/{productId}")]
         public async Task<IActionResult> RemoveItem(long productId)
         {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!long.TryParse(userIdValue, out var userId))
+                return Unauthorized();
+
+            var cart = await dbContext.Carts
+                .FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (cart == null)
+                return NotFound();
+
             var item = await dbContext.CartItems
-                .FirstOrDefaultAsync(x => x.ProductId == productId);
+                .FirstOrDefaultAsync(x =>
+                    x.CartId == cart.CartId &&
+                    x.ProductId == productId);
 
             if (item == null)
                 return NotFound();
 
             dbContext.CartItems.Remove(item);
+
             await dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Removed" });
+            return Ok(new
+            {
+                message = "Removed"
+            });
         }
 
 

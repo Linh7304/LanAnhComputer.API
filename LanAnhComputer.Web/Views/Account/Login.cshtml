@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+@await Html.PartialAsync("~/Views/Shared/_AuthModal.cshtml")
+
+<script>
+
+    // Tự động mở modal khi vào trang Login
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        if (typeof openAuthModal === "function") {
+            openAuthModal();
+        }
+
+    });
+
+</script>

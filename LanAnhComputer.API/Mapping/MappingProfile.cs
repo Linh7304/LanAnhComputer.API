@@ -11,7 +11,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Category, CategoryDto>();
+        CreateMap<Category, CategoryDto>(); // chuyển từ Category sang CategoryDto
         CreateMap<CategoryUpsertDto, Category>();
 
         CreateMap<Product, ProductDto>();

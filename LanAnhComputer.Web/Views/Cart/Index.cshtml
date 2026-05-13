@@ -1,9 +1,12 @@
 ﻿@model List<LanAnhComputer.Web.ViewModels.CartItemViewModel>
 @using LanAnhComputer.Web.ViewModels
+@using Microsoft.AspNetCore.Http
 @{
     ViewData["Title"] = "Giỏ hàng";
 }
-
+@{
+    var subtotal = Model.Sum(x => x.TotalPrice);
+}
 <div class="container mx-auto px-4 py-8">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
@@ -34,9 +37,10 @@
                             <!-- Product -->
                             <div class="col-span-6 flex gap-4">
                                 <div class="w-24 h-24 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                                    <img src="https://placehold.co/100x100/e2e8f0/64748b?text=@Uri.EscapeDataString(item.Brand ?? "Product")"
+                                    <img src="@item.ImageUrl"
                                          alt="@item.ProductName"
-                                         class="w-full h-full object-cover" />
+                                         class="w-full h-full object-cover"
+                                         onerror="this.src='/images/no-image.png'" />
                                 </div>
                                 <div class="flex-1">
                                     <h3 class="font-medium text-slate-800 mb-1 line-clamp-2">@item.ProductName</h3>
@@ -108,7 +112,7 @@
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between text-slate-600">
                         <span>Tạm tính</span>
-                        <span id="subtotal">44.160.000đ</span>
+                        <span id="subtotal"> @subtotal.ToString("N0")đ</span>
                     </div>
                     <div class="flex justify-between text-slate-600">
                         <span>Giảm giá</span>
@@ -120,7 +124,9 @@
                     </div>
                     <div class="border-t border-slate-200 pt-3 flex justify-between">
                         <span class="text-lg font-semibold text-slate-800">Tổng cộng</span>
-                        <span id="total" class="text-xl font-bold text-red-600">44.160.000đ</span>
+                        <span id="total" class="text-xl font-bold text-red-600">
+                            @subtotal.ToString("N0")đ
+                        </span>
                     </div>
                 </div>
                 
@@ -147,41 +153,103 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
-    <script>
-        function removeItem(id) {
-                        fetch(`/api/cart/remove/${id}`, {
-            method: "DELETE"
-        }).then(() => location.reload());
-            }
-        }
-    
-        function updateQuantity(id, delta) {
-                     const input = document.querySelector(`.cart-item[data-id="${id}"] input`);
-        const newQty = parseInt(input.value) + delta;
 
-        fetch(`/api/cart/update`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                productId: id,
-                quantity: newQty
+    <script>
+
+        const token = "@Context.Session.GetString("JWT")";
+
+        function removeItem(id) {
+
+            fetch(`https://localhost:7132/api/cart/remove/${id}`, {
+
+                method: "DELETE",
+
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+
             })
-        }).then(() => location.reload());
+            .then(response => {
+
+                if (response.ok) {
+                    location.reload();
+                }
+                else {
+                    alert("Có lỗi xảy ra");
+                }
+            });
         }
-    
+
+        function updateQuantity(id, delta) {
+
+            const input = document.querySelector(
+                `.cart-item[data-id="${id}"] input`
+            );
+
+            let newQty = parseInt(input.value) + delta;
+
+            if (newQty < 1)
+                newQty = 1;
+
+            fetch(`https://localhost:7132/api/cart/update`, {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    productId: id,
+                    quantity: newQty
+                })
+
+            })
+            .then(response => {
+
+                if (response.ok) {
+                    location.reload();
+                }
+                else {
+                    alert("Có lỗi xảy ra");
+                }
+            });
+        }
+
         function updateQuantityInput(id, value) {
-            if (value < 1) {
-                const item = document.querySelector(`.cart-item[data-id="${id}"]`);
-                item.querySelector('input[type="number"]').value = 1;
-            }
-            updateTotals();
+
+            let qty = parseInt(value);
+
+            if (qty < 1)
+                qty = 1;
+
+            fetch(`https://localhost:7132/api/cart/update`, {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    productId: id,
+                    quantity: qty
+                })
+
+            })
+            .then(response => {
+
+                if (response.ok) {
+                    location.reload();
+                }
+                else {
+                    alert("Có lỗi xảy ra");
+                }
+            });
         }
-    
-        function updateTotals() {
-            // Recalculate totals
-            // This would normally sync with backend
-        }
+
     </script>
 }
