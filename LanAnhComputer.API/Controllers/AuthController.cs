@@ -104,7 +104,8 @@ public class AuthController(AppDbContext dbContext, IConfiguration configuration
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             ExpiresAt = expiresAt,
             Role = user.Role,
-            UserId = user.UserId
+            UserId = user.UserId,
+            FullName = user.FullName
         };
     }
 }

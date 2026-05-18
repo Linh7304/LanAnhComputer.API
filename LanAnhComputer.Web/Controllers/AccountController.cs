@@ -14,15 +14,11 @@ namespace LanAnhComputer.Web.Controllers
             _httpClient = httpClient;
         }
 
-        [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
-        {
-            ViewBag.ReturnUrl = returnUrl;
-
-            return View();
-        }
+        // LOGIN
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+        public async Task<IActionResult> Login(
+            [FromBody] LoginViewModel model,
+            string? returnUrl = null)
         {
             var response = await _httpClient.PostAsJsonAsync(
                 "https://localhost:7132/api/Auth/login",
@@ -30,20 +26,63 @@ namespace LanAnhComputer.Web.Controllers
 
             if (!response.IsSuccessStatusCode)
             {
-                ViewBag.Error = "Sai tài khoản hoặc mật khẩu";
-                return View(model);
+                return BadRequest(new
+                {
+                    message = "Sai tài khoản hoặc mật khẩu"
+                });
             }
 
             var result = await response.Content
                 .ReadFromJsonAsync<AuthResponseViewModel>();
 
-            // Lưu JWT vào Session
+            // Lưu JWT
             HttpContext.Session.SetString("JWT", result!.Token);
 
-            if (!string.IsNullOrEmpty(returnUrl))
+            // Lưu tên user nếu API có trả về
+            HttpContext.Session.SetString("FullName",result.FullName ?? "User");
+
+            return Ok(new
             {
-                return Redirect(returnUrl);
+                redirectTo = string.IsNullOrEmpty(returnUrl)
+                    ? "/"
+                    : returnUrl
+            });
+        }
+
+        // REGISTER
+        [HttpPost]
+        public async Task<IActionResult> Register(
+            [FromBody] RegisterViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                "https://localhost:7132/api/Auth/register",
+                model);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return BadRequest(new
+                {
+                    message = "Đăng ký thất bại"
+                });
             }
+
+            var result = await response.Content
+                .ReadFromJsonAsync<AuthResponseViewModel>();
+
+            HttpContext.Session.SetString("JWT", result!.Token);
+
+            HttpContext.Session.SetString("FullName",result.FullName ?? "User");
+
+            return Ok(new
+            {
+                redirectTo = "/"
+            });
+        }
+
+        // LOGOUT
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
         }

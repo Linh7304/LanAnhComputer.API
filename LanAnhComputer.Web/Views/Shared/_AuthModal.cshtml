@@ -7,7 +7,7 @@
                 <i data-lucide="x" class="w-6 h-6 text-slate-500"></i>
             </button>
         </div>
-
+        <input type="hidden" id="authMode" value="login" />
         <form id="authForm" method="post"
               action="/Account/Login" class="space-y-4">
             <input type="hidden"
@@ -17,11 +17,11 @@
             <div id="registerFields" class="hidden space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Họ và tên</label>
-                    <input type="text" id="regFullName" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-primary-500" placeholder="Nguyễn Văn A">
+                    <input type="text" id="regFullName" name="FullName" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-primary-500" placeholder="Nguyễn Văn A">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Số điện thoại</label>
-                    <input type="text" id="regPhone" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-primary-500" placeholder="09xxx...">
+                    <input type="text" id="regPhone" name="Phone" class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-primary-500" placeholder="09xxx...">
                 </div>
             </div>
 

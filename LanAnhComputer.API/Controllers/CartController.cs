@@ -32,7 +32,7 @@ namespace LanAnhComputer.Controllers
             if (cart == null)
                 return Ok(new List<object>());
 
-            var result = cart.CartItems.Select(x => new
+            var result = cart.CartItems.Select(x => new  //(entity->dto ) 
             {
                 productId = x.ProductId,
                 productName = x.Product.ProductName,
@@ -50,7 +50,7 @@ namespace LanAnhComputer.Controllers
         // ADD TO CART
         [Authorize]
         [HttpPost("add")]
-        public async Task<IActionResult> AddToCart(CartDto dto)
+        public async Task<IActionResult> AddToCart([FromBody] CartDto dto)
         {
             var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -83,7 +83,7 @@ namespace LanAnhComputer.Controllers
             }
             else
             {
-                var newItem = mapper.Map<CartItem>(dto);
+                var newItem = mapper.Map<CartItem>(dto); // (DTO -> entity) 
 
                 newItem.CartId = cart.CartId;
                 newItem.CreatedAt = DateTime.UtcNow;
@@ -93,11 +93,13 @@ namespace LanAnhComputer.Controllers
             }
 
             await dbContext.SaveChangesAsync();
-
+            Console.WriteLine(dto.ProductId);
+            Console.WriteLine(dto.Quantity);
             return Ok(new
             {
                 message = "Added to cart successfully"
             });
+           
         }
         // UPDATE QUANTITY
         // =========================

@@ -15,7 +15,7 @@ namespace LanAnhComputer.Data
         public DbSet<ChatbotHistory> ChatbotHistories => Set<ChatbotHistory>();
         public DbSet<Cart> Carts => Set<Cart>();
         public DbSet<CartItem> CartItems => Set<CartItem>();
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder) // fluent API để cấu hình chi tiết hơn về cách ánh xạ giữa các class và bảng trong cơ sở dữ liệu, bao gồm ràng buộc, chỉ mục, kiểu dữ liệu, v.v.
         {
             base.OnModelCreating(modelBuilder);
             // Category

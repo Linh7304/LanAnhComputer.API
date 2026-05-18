@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
-using System.Security.Claims;
+using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data;
 using LanAnhComputer.Data.Entities;
 using LanAnhComputer.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LanAnhComputer.Controllers;
 
@@ -164,5 +165,91 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
         dbContext.Orders.Remove(order);
         await dbContext.SaveChangesAsync();
         return NoContent();
+    }
+    [HttpPost("checkout")]
+    [Authorize(Roles = "Customer")]
+    public async Task<ActionResult<OrderDto>> Checkout([FromBody] CheckoutDtos dto)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!long.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        // 1. Lấy cart theo user
+        var cart = await dbContext.Carts
+            .FirstOrDefaultAsync(x => x.UserId == userId);
+
+        if (cart == null)
+            return BadRequest("Cart not found");
+
+        // 2. Lấy cart items + product
+        var cartItems = await dbContext.CartItems
+            .Where(x => x.CartId == cart.CartId)
+            .Include(x => x.Product)
+            .ToListAsync();
+
+        if (cartItems.Count == 0)
+            return BadRequest("Cart is empty");
+
+        // 3. Tạo Order
+        var order = new Order
+        {
+            OrderCode = $"ORD-{DateTime.UtcNow.Ticks}",
+            UserId = userId,
+            OrderDate = DateTime.UtcNow,
+
+            OrderStatus = "Pending",
+            PaymentMethod = dto.PaymentMethod,
+            PaymentStatus = "Unpaid",
+
+            ShippingFullName = dto.ShippingFullName,
+            ShippingPhone = dto.ShippingPhone,
+            ShippingAddressLine = dto.ShippingAddressLine,
+            ShippingWard = dto.ShippingWard,
+            ShippingDistrict = dto.ShippingDistrict,
+            ShippingCity = dto.ShippingCity,
+            Note = dto.Note,
+
+            OrderDetails = new List<OrderDetail>()
+        };
+
+        // 4. Convert Cart → OrderDetail (FIX QUAN TRỌNG)
+        foreach (var item in cartItems)
+        {
+            if (item.Product == null)
+                return BadRequest($"Product {item.ProductId} not found");
+
+            var unitPrice = item.Product.SalePrice; // ✅ FIX
+            var lineTotal = unitPrice * item.Quantity;
+
+            order.OrderDetails.Add(new OrderDetail
+            {
+                ProductId = item.ProductId,
+                UnitPrice = unitPrice,
+                Quantity = item.Quantity,
+                DiscountPercent = 0,
+                LineTotal = lineTotal
+            });
+        }
+
+        // 5. Tính tiền
+        order.SubTotal = order.OrderDetails.Sum(x => x.LineTotal);
+        order.DiscountAmount = dto.DiscountAmount;
+        order.ShippingFee = dto.ShippingFee;
+        order.TotalAmount = order.SubTotal - order.DiscountAmount + order.ShippingFee;
+
+        // 6. Save Order
+        dbContext.Orders.Add(order);
+
+        // 7. Xoá cart items sau khi checkout
+        dbContext.CartItems.RemoveRange(cartItems);
+
+        await dbContext.SaveChangesAsync();
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = order.OrderId },
+            mapper.Map<OrderDto>(order)
+        );
     }
 }

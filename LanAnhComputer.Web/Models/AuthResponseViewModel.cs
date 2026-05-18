@@ -7,5 +7,6 @@
         public DateTime ExpiresAt { get; set; }
         public string Role { get; set; } = string.Empty;
         public long UserId { get; set; }
+        public string FullName { get; set; } 
     }
 }

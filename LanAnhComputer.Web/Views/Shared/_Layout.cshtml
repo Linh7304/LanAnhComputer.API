@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var token = Context.Session.GetString("JWT");
+    var fullName = Context.Session.GetString("FullName");
+    var isLoggedIn = token != null;
+}
+@{
+    var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+}
+<!DOCTYPE html>
 <html lang="vi" class="bg-slate-50">
 <head>
     <meta charset="utf-8" />
@@ -99,26 +107,75 @@
                 </div>
                 <!-- Actions -->
                 <div class="flex items-center gap-3">
-                      
-                    <a href="javascript:void(0)"
-                           onclick="handleCartClick()"
-                           class="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                    <a href="javascript:void(0)" onclick="handleCartClick()" class="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
                         <i data-lucide="shopping-cart" class="w-6 h-6 text-slate-700"></i>
-                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-                     </a>
+                        @if (cartCount > 0)
+                        {
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                @cartCount
+                            </span>
+                        }
+                    </a>
                     <a href="#" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
                         <i data-lucide="heart" class="w-6 h-6 text-slate-700"></i>
                     </a>
-                    <button id="authButton"
-                            onclick="handleAuthButton()"
-                            class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                    @if (isLoggedIn)
+                    {
+                        <div class="relative">
+        
+                            <!-- Button -->
+                            <button onclick="toggleUserMenu()"
+                                    class="flex items-center gap-2 px-3 py-2 hover:bg-slate-100 rounded-xl transition">
 
-                        <i data-lucide="user" class="w-5 h-5"></i>
+                                <!-- Avatar -->
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-r from-primary-500 to-primary-700 text-white flex items-center justify-center font-bold">
+                                    @((!string.IsNullOrEmpty(fullName))? fullName.Substring(0, 1).ToUpper(): "U")
+                                </div>
 
-                        <span id="authButtonText" class="hidden sm:inline">
-                            Đăng nhập
-                        </span>
-                    </button>
+                                <!-- Name -->
+                                <span class="hidden md:block font-medium text-slate-700">
+                                    @fullName
+                                </span>
+
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div id="userMenu"
+                                 class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50 transition-all duration-200">
+
+                                <a href="/Account/Profile"
+                                       class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
+                                    <i data-lucide="user" class="w-5 h-5"></i>
+                                    Tài khoản
+                                </a>
+
+                                <a href="/Orders/Index"
+                                       class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
+                                    <i data-lucide="package" class="w-5 h-5"></i>
+                                    Đơn hàng
+                                </a>
+                               <hr>
+                                <a href="/Account/Logout"
+                                       class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                    Đăng xuất
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <button onclick="openAuthModal('login')"
+                                class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+
+                            <i data-lucide="user" class="w-5 h-5"></i>
+
+                            <span class="hidden sm:inline">
+                                Đăng nhập
+                            </span>
+                        </button>
+                    }
 
                 </div>
             </div>
@@ -283,14 +340,16 @@
         const registerFields = document.getElementById('registerFields');
         const submitBtn = document.getElementById('authSubmitBtn');
         const switchArea = document.getElementById('switchArea');
-
+        const form = document.getElementById('authForm');
         modal.classList.remove('hidden');
 
         if (mode === 'login') {
         title.textContent = 'Đăng nhập';
+
         submitBtn.textContent = 'Đăng nhập';
 
         registerFields.classList.add('hidden');
+        form.action = '/Account/Login';
 
         switchArea.innerHTML = `
         Chưa có tài khoản?
@@ -305,6 +364,7 @@
         submitBtn.textContent = 'Tạo tài khoản';
 
         registerFields.classList.remove('hidden');
+        form.action = '/Account/Register';
 
         switchArea.innerHTML = `
         Đã có tài khoản?
@@ -325,129 +385,122 @@
         }
 
         // Submit form
-        async function handleAuthSubmit(event) {
-        event.preventDefault();
-
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-
-        const payload = {
-        email,
-        password
-        };
-
-        // Nếu đăng ký thì thêm thông tin
-        if (currentMode === 'register') {
-        payload.fullName = document.getElementById('regFullName').value;
-        payload.phone = document.getElementById('regPhone').value;
+        function handleCartClick() {
+        window.location.href = '/Cart';
         }
+    
+        function handleAuthButton() {
+        const isLoggedIn =
+        '@(Context.Session.GetString("JWT") != null)';
 
-        // URL API
-        const url =
-        currentMode === 'login'
-        ? 'https://localhost:7132/api/Auth/login'
-        : 'https://localhost:7132/api/Auth/register';
+        if (isLoggedIn === 'True') {
+
+        window.location.href = '/Account/Logout';
+
+        } else {
+
+        openAuthModal('login');
+        }
+        }
+        function toggleUserMenu() {
+
+        const menu = document.getElementById('userMenu');
+
+        menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function (event) {
+
+        const menu = document.getElementById('userMenu');
+
+        if (!menu) return;
+
+        const button = event.target.closest('button');
+
+        if (!event.target.closest('#userMenu') &&
+        !button?.onclick?.toString().includes('toggleUserMenu')) {
+
+        menu.classList.add('hidden');
+        }
+        });
+    </script>
+    <script>
+        async function addToCart(productId) {
 
         try {
-        const response = await fetch(url, {
+
+        const response = await fetch('/Cart/AddToCart', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+        productId: productId,
+        quantity: 1
+        })
         });
 
-        const data = await response.json();
+        if (response.status === 401) {
 
-        if (response.ok) {
-
-        // Lưu token
-        if (data.token) {
-        localStorage.setItem('token', data.token);
+        openAuthModal('login');
+        return;
         }
 
-        if (data.role) {
-        localStorage.setItem('userRole', data.role);
-        }
-        updateAuthButton();
-        alert(
-        currentMode === 'login'
-        ? 'Đăng nhập thành công!'
-        : 'Đăng ký thành công!'
-        );
-
-        // Redirect
-        if (data.role === 'Admin') {
-        window.location.href = '/dashboard';
-        } else {
-        window.location.href = '/';
+        if (!response.ok) {
+        alert('Thêm thất bại!');
+        return;
         }
 
-        } else {
-        alert(data.message || 'Có lỗi xảy ra!');
-        }
+        alert('Đã thêm vào giỏ hàng!');
+
+        location.reload();
 
         } catch (error) {
-        console.error(error);
-        alert('Không thể kết nối tới server API');
+
+        alert('Có lỗi xảy ra!');
         }
         }
-        // Kiểm tra trạng thái đăng nhập
-        function updateAuthButton() {
 
-        const token = localStorage.getItem('token');
+        // LOGIN / REGISTER AJAX
+        document.getElementById('authForm')
+        .addEventListener('submit', async function (e) {
 
-        const buttonText = document.getElementById('authButtonText');
+        e.preventDefault();
 
-        if (token) {
-        buttonText.textContent = 'Đăng xuất';
-        } else {
-        buttonText.textContent = 'Đăng nhập';
-        }
-        }
-        function handleAuthButton() {
+        const form = e.target;
 
-        const token = localStorage.getItem('token');
+        const formData = new FormData(form);
 
-        // Nếu đã đăng nhập -> logout
-        if (token) {
+        const data = Object.fromEntries(formData.entries());
 
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
+        try {
 
-        alert('Đã đăng xuất!');
-
-        updateAuthButton();
-
-        window.location.href = '/';
-
-        } else {
-
-        // Nếu chưa đăng nhập -> mở modal login
-        openAuthModal('login');
-        }
-        }
-            function handleCartClick() {
-
-            const token = localStorage.getItem('token');
-
-            // Chưa login
-            if (!token) {
-
-            openAuthModal('login');
-            return;
-            }
-
-            // Đã login
-            window.location.href = '/Cart';
-            }
-
-        // Khởi tạo trạng thái button khi tải trang
-        document.addEventListener('DOMContentLoaded', function() {
-            updateAuthButton();
+        const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
         });
 
+        const result = await response.json();
+
+        if (!response.ok) {
+
+        alert(result.message || 'Có lỗi xảy ra');
+        return;
+        }
+
+        // Thành công
+        window.location.href = result.redirectTo;
+
+        } catch (err) {
+
+        alert('Lỗi server');
+        }
+        });
     </script>
+    
     @RenderSection("Scripts", required: false)
+  
 </body>
 </html>

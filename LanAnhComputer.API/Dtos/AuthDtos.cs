@@ -37,6 +37,8 @@ public class AuthResponseDto
     public DateTime ExpiresAt { get; set; }
     public string Role { get; set; } = null!;
     public long UserId { get; set; }
+
+    public string FullName { get; set; } = string.Empty;
 }
 
 public class CurrentUserDto

@@ -6,28 +6,24 @@
     <title>Thanh toán - Lan Anh Computer</title>
     <!-- Tích hợp Tailwind CSS -->
     <script src="https://jsdelivr.net"></script>
-    <!-- Cấu hình màu sắc hệ thống giống dự án của bạn -->
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            500: '#0284c7',
-                            600: '#2563eb', // Màu xanh chủ đạo từ code của bạn
-                            700: '#1d4ed8',
-                        }
-                    }
-                }
-            }
+        theme: {
+        extend: {
+        colors: {
+        primary: {
+        600: '#2563eb', /* Màu xanh giống trang giỏ hàng của bạn */
+        700: '#1d4ed8',
+        }
+        }
+        }
+        }
         }
     </script>
     <style>
-        /* CSS bổ sung để hỗ trợ tính năng chọn phương thức thanh toán tối giản */
         .payment-radio:checked ~ .payment-box {
-            border-color: #2563eb;
-            background-color: rgba(37, 99, 235, 0.03);
+        border-color: #2563eb;
+        background-color: rgba(37, 99, 235, 0.03);
         }
     </style>
 </head>
@@ -42,47 +38,47 @@
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
             <span class="text-slate-800">Thanh toán</span>
         </nav>
-        
+
         <h1 class="text-2xl font-bold text-slate-800 mb-8">Thông tin đặt hàng</h1>
-        
-        <form onsubmit="event.preventDefault(); alert('Đặt hàng thành công! (Demo)');">
+
+        <form onsubmit="event.preventDefault(); alert('Đặt hàng thành công!');">
             <div class="flex flex-col lg:flex-row gap-8">
-                
+
                 <!-- Cột trái: Thông tin giao hàng & Thanh toán -->
                 <div class="flex-1 space-y-6">
-                    
+
                     <!-- Khối thông tin khách hàng -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                         <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                             <i data-lucide="map-pin" class="w-5 h-5 text-slate-600"></i>
                             Thông tin giao hàng
                         </h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Họ và tên</label>
                                 <input type="text" required placeholder="Nguyễn Văn A"
                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
                                 <input type="tel" required placeholder="0912345678"
                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Email (Không bắt buộc)</label>
                                 <input type="email" placeholder="nguyenvana@gmail.com"
                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
-                            
+
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Địa chỉ nhận hàng</label>
                                 <input type="text" required placeholder="Số 123, Đường Trần Phú, Quận Hà Đông, Hà Nội"
                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
-                            
+
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Ghi chú đơn hàng</label>
                                 <textarea rows="3" placeholder="Giao giờ hành chính, gọi trước khi giao 15 phút..."
@@ -90,33 +86,31 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Khối phương thức thanh toán -->
                     <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                         <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                             <i data-lucide="credit-card" class="w-5 h-5 text-slate-600"></i>
                             Phương thức thanh toán
                         </h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <!-- Tùy chọn COD -->
+                            <!-- COD -->
                             <label class="relative block cursor-pointer">
                                 <input type="radio" name="PaymentMethod" value="COD" checked class="peer sr-only payment-radio" />
-                                <div class="payment-box p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-start gap-3 peer-checked:border-primary-600 peer-checked:bg-blue-50/30">
-                                    <div class="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center mt-0.5 peer-checked:border-primary-600">
-                                        <div class="w-2 h-2 rounded-full bg-primary-600 hidden parent-checked:block"></div>
-                                    </div>
+                                <div class="payment-box p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-start gap-3">
+                                    <div class="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center mt-0.5"></div>
                                     <div>
                                         <span class="block font-medium text-slate-800 text-sm">Thanh toán khi nhận hàng (COD)</span>
                                         <span class="block text-xs text-slate-500 mt-0.5">Thanh toán bằng tiền mặt khi nhận hàng</span>
                                     </div>
                                 </div>
                             </label>
-                            
-                            <!-- Tùy chọn Chuyển khoản -->
+
+                            <!-- Chuyển khoản -->
                             <label class="relative block cursor-pointer">
                                 <input type="radio" name="PaymentMethod" value="BankTransfer" class="peer sr-only payment-radio" />
-                                <div class="payment-box p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-start gap-3 peer-checked:border-primary-600 peer-checked:bg-blue-50/30">
+                                <div class="payment-box p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-start gap-3">
                                     <div class="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center mt-0.5"></div>
                                     <div>
                                         <span class="block font-medium text-slate-800 text-sm">Chuyển khoản ngân hàng</span>
@@ -127,18 +121,17 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Cột phải: Tóm tắt đơn hàng thu nhỏ -->
                 <div class="lg:w-96">
                     <div class="bg-white rounded-xl border border-slate-200 p-6 sticky top-24 shadow-sm">
                         <h2 class="text-lg font-semibold text-slate-800 mb-4">Đơn hàng của bạn</h2>
-                        
-                        <!-- Danh sách sản phẩm demo tĩnh -->
+
+                        <!-- Danh sách sản phẩm -->
                         <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 pr-1 mb-6">
-                            <!-- Sản phẩm 1 -->
                             <div class="flex gap-3 py-3 first:pt-0">
                                 <div class="w-12 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-100">
-                                    <img src="https://unsplash.com" alt="CPU AMD" class="w-full h-full object-cover" />
+                                    <img src="https://unsplash.com" alt="CPU" class="w-full h-full object-cover" />
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-sm font-medium text-slate-800 truncate">Bộ vi xử lý AMD Ryzen 5 5600X</h4>
@@ -148,14 +141,13 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Sản phẩm 2 -->
+
                             <div class="flex gap-3 py-3">
                                 <div class="w-12 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-100">
-                                    <img src="https://unsplash.com" alt="RAM Corsair" class="w-full h-full object-cover" />
+                                    <img src="https://unsplash.com" alt="RAM" class="w-full h-full object-cover" />
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="text-sm font-medium text-slate-800 truncate">RAM Corsair Vengeance LPX 16GB (2x8GB) DDR4 3200MHz</h4>
+                                    <h4 class="text-sm font-medium text-slate-800 truncate">RAM Corsair Vengeance LPX 16GB (2x8GB)</h4>
                                     <div class="flex justify-between items-center mt-1">
                                         <span class="text-xs text-slate-500">SL: x2</span>
                                         <span class="text-sm font-medium text-slate-700">1,900,000đ</span>
@@ -163,8 +155,8 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Tính toán số tiền tĩnh -->
+
+                        <!-- Tính tiền -->
                         <div class="space-y-3 mb-6 border-t border-slate-100 pt-4">
                             <div class="flex justify-between text-sm text-slate-600">
                                 <span>Tạm tính</span>
@@ -179,26 +171,25 @@
                                 <span class="text-xl font-bold text-red-600">5,850,000đ</span>
                             </div>
                         </div>
-                        
-                        <!-- Nút hành động -->
+
+                        <!-- Nút đặt hàng -->
                         <button type="submit" class="w-full py-3 bg-primary-600 text-white text-center font-semibold rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 cursor-pointer">
                             <i data-lucide="shield-check" class="w-5 h-5"></i>
                             Đặt hàng ngay
                         </button>
-                        
-                        <!-- Ghi chú bảo mật -->
+
                         <p class="text-center text-xs text-slate-400 mt-4 flex items-center justify-center gap-1">
                             <i data-lucide="lock" class="w-3 h-3"></i>
                             Thông tin của bạn luôn được bảo mật
                         </p>
                     </div>
                 </div>
-                
+
             </div>
         </form>
     </div>
 
-    <!-- Tích hợp bộ thư viện biểu tượng Lucide Icons để chạy giao diện tĩnh -->
+    <!-- Nạp Lucide Icons -->
     <script src="https://unpkg.com"></script>
     <script>
         lucide.createIcons();
