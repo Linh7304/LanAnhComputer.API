@@ -13,7 +13,6 @@ namespace LanAnhComputer.Web.Controllers
             _accountService = accountService;
         }
 
-        // LOGIN
         [HttpPost]
         public async Task<IActionResult> Login(
             [FromBody] LoginViewModel model,
@@ -29,21 +28,18 @@ namespace LanAnhComputer.Web.Controllers
                 });
             }
 
-            // Lưu JWT
-            HttpContext.Session.SetString("JWT", result.Token);
+            SaveUserSession(result);
 
-            // Lưu tên user nếu API có trả về
-            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
+            var redirectTo = result.Role == "Admin"
+                ? "/admin"
+                : string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl;
 
             return Ok(new
             {
-                redirectTo = string.IsNullOrEmpty(returnUrl)
-                    ? "/"
-                    : returnUrl
+                redirectTo
             });
         }
 
-        // REGISTER
         [HttpPost]
         public async Task<IActionResult> Register(
             [FromBody] RegisterViewModel model)
@@ -58,9 +54,7 @@ namespace LanAnhComputer.Web.Controllers
                 });
             }
 
-            HttpContext.Session.SetString("JWT", result.Token);
-
-            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
+            SaveUserSession(result);
 
             return Ok(new
             {
@@ -68,12 +62,18 @@ namespace LanAnhComputer.Web.Controllers
             });
         }
 
-        // LOGOUT
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private void SaveUserSession(AuthResponseViewModel result)
+        {
+            HttpContext.Session.SetString("JWT", result.Token);
+            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
+            HttpContext.Session.SetString("Role", result.Role);
         }
     }
 }
