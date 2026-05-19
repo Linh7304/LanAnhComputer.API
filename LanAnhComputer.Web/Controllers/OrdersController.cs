@@ -8,5 +8,15 @@ namespace LanAnhComputer.Web.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public IActionResult CheckPaymentStatus(long orderId)
+        {
+            // demo fake
+
+            return Json(new
+            {
+                success = true
+            });
+        }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using LanAnhComputer.Data;
-using LanAnhComputer.Dtos;
 using LanAnhComputer.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
@@ -101,8 +99,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowAll"); 
 app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
+app.UseAuthorization(); // Middleware xác thực và phân quyền phải đặt sau UseAuthentication
+app.UseStaticFiles(); // Cho phép phục vụ file tĩnh từ wwwroot (chứa ảnh sản phẩm)
+app.MapControllers(); // Map các controller vào luồng xử lý
 
 app.Run();

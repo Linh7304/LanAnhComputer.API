@@ -3,7 +3,6 @@ using LanAnhComputer.API.Data.Entities;
 using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data.Entities;
 using LanAnhComputer.Dtos;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LanAnhComputer.Mapping;
 
@@ -11,11 +10,15 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Category, CategoryDto>(); // chuyển từ Category sang CategoryDto
+        CreateMap<Category, CategoryDto>();
         CreateMap<CategoryUpsertDto, Category>();
 
         CreateMap<Product, ProductDto>();
-        CreateMap<ProductUpsertDto, Product>();
+
+        // QUAN TRỌNG
+        CreateMap<ProductUpsertDto, Product>()
+            .ForMember(dest => dest.ImageUrl,
+                opt => opt.Ignore());
 
         CreateMap<User, UserDto>();
         CreateMap<UserUpsertDto, User>();
@@ -26,6 +29,7 @@ public class MappingProfile : Profile
 
         CreateMap<ChatbotHistory, ChatbotHistoryDto>();
         CreateMap<ChatbotHistoryCreateDto, ChatbotHistory>();
+
         CreateMap<CartDto, CartItem>();
     }
 }

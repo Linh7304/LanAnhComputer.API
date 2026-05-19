@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using LanAnhComputer.Web.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,7 +8,25 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IProductService, ProductService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<ICartService, CartService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<ICheckoutService, CheckoutService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
 
 // Session
 builder.Services.AddDistributedMemoryCache();

@@ -1,0 +1,203 @@
+﻿@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+@model LanAnhComputer.Web.ViewModels.ProductViewModel
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb (Đồng nhất với trang Cart/Checkout) -->
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8">
+        <a href="/" class="hover:text-primary-600">Trang chủ</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <a href="/san-pham" class="hover:text-primary-600">Linh kiện máy tính</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-slate-800 truncate">@Model.ProductName</span>
+    </nav>
+
+    <!-- Main Product Section (Grid 2 cột tối giản) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
+
+        <!-- Cột trái: Hình ảnh sản phẩm (Hiển thị phẳng, sạch sẽ) -->
+        <div class="lg:col-span-5 space-y-4">
+            <!-- Ảnh lớn chính -->
+            <div class="w-full aspect-square bg-white rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center p-4 shadow-sm">
+                <img id="mainProductImage"
+                     src="https://unsplash.com"
+                     alt="@Model.ProductName"
+                     class="w-full h-full object-contain transition-all duration-300" />
+            </div>
+
+            <!-- Danh sách ảnh nhỏ phụ (Thumbnails phẳng) -->
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="changeImage(this.children[0].src)" class="aspect-square bg-white rounded-xl border-2 border-primary-600 p-1 overflow-hidden focus:outline-none thumbnail-btn">
+                    <img src="https://unsplash.com" class="w-full h-full object-contain" />
+                </button>
+                <button onclick="changeImage(this.children[0].src)" class="aspect-square bg-white rounded-xl border border-slate-200 p-1 overflow-hidden hover:border-slate-400 focus:outline-none thumbnail-btn">
+                    <img src="https://unsplash.com" class="w-full h-full object-contain" />
+                </button>
+                <button onclick="changeImage(this.children[0].src)" class="aspect-square bg-white rounded-xl border border-slate-200 p-1 overflow-hidden hover:border-slate-400 focus:outline-none thumbnail-btn">
+                    <img src="https://unsplash.com" class="w-full h-full object-contain" />
+                </button>
+                <button onclick="changeImage(this.children[0].src)" class="aspect-square bg-white rounded-xl border border-slate-200 p-1 overflow-hidden hover:border-slate-400 focus:outline-none thumbnail-btn">
+                    <img src="https://unsplash.com" class="w-full h-full object-contain" />
+                </button>
+            </div>
+        </div>
+
+        <!-- Cột phải: Thông tin chi tiết & Mua hàng -->
+        <div class="lg:col-span-7 flex flex-col justify-between">
+            <div>
+                <!-- Trạng thái kho hàng & Thương hiệu -->
+                <div class="flex items-center gap-3 mb-3 text-xs font-semibold uppercase tracking-wider">
+                    <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Còn hàng
+                    </span>
+                    <span class="text-slate-400">|</span>
+                    <span class="text-slate-600">Thương hiệu: <strong class="text-slate-800">AMD</strong></span>
+                </div>
+
+                <!-- Tên sản phẩm & SKU -->
+                <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 mb-2 leading-tight">Bộ vi xử lý AMD Ryzen 5 5600X (3.7GHz Boost 4.6GHz / 35MB Cache / 6 Cores 12 Threads / 65W / Socket AM4)</h1>
+                <p class="text-sm text-slate-500 mb-6">SKU: LAC-5600X</p>
+
+                <!-- Giá tiền (Đồng bộ màu sắc hệ thống) -->
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-baseline gap-4 mb-6">
+                    <span class="text-3xl font-extrabold text-red-600">3,950,000đ</span>
+                    <span class="text-sm text-slate-400 line-through">4,850,000đ</span>
+                    <span class="text-xs font-bold bg-red-50 text-red-600 px-2 py-0.5 rounded">Tiết kiệm 18%</span>
+                </div>
+
+                <!-- Tóm tắt ngắn thông số (Ưu tiên hiển thị phẳng nhẹ nhàng) -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-semibold text-slate-800 mb-3">Điểm nổi bật sản phẩm:</h3>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0"></i>
+                            Kiến trúc Zen 3 tiên tiến tiến trình 7nm tối ưu điện năng.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0"></i>
+                            Xử lý mượt mà tác vụ đồ họa nhẹ và chơi game phổ thông.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0"></i>
+                            Tặng kèm quạt tản nhiệt chính hãng Wraith Stealth siêu êm.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Khối chọn số lượng & Nút hành động bấm mua -->
+            <div class="border-t border-slate-200 pt-6 space-y-4">
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-slate-700">Số lượng:</span>
+                    <!-- Bộ tăng giảm số lượng (Đồng bộ trang Cart) -->
+                    <div class="flex items-center border border-slate-300 rounded-lg bg-white">
+                        <button onclick="changeQty(-1)" class="p-2 hover:bg-slate-50 transition-colors">
+                            <i data-lucide="minus" class="w-4 h-4"></i>
+                        </button>
+                        <input type="number" id="productQuantity" value="1" min="1" max="99"
+                               class="w-12 text-center border-x border-slate-300 py-1.5 focus:outline-none font-medium" />
+                        <button onclick="changeQty(1)" class="p-2 hover:bg-slate-50 transition-colors">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nhóm các nút tương tác (Kế thừa hiệu ứng active:scale-95 từ Layout) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <!-- Nút Thêm Vào Giỏ Hàng (Gọi trực tiếp hàm addToCart có sẵn trong Layout của bạn) -->
+                    <button onclick="submitToCart(@Model.ProductId)" class="w-full py-3.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        Thêm vào giỏ hàng
+                    </button>
+
+                    <!-- Nút Mua Ngay (Chuyển nhanh hướng thẳng đến trang Đặt hàng) -->
+                    <a href="/Checkout/Index" class="w-full py-3.5 border border-primary-600 text-primary-600 font-semibold rounded-xl hover:bg-blue-50/40 transition-all active:scale-95 flex items-center justify-center gap-2 text-center">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        Mua ngay
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Technical Specifications Section (Bảng thông số phẳng phẳng - tối giản hoàn toàn) -->
+    <div class="mt-16 max-w-4xl">
+        <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <i data-lucide="cpu" class="w-5 h-5 text-slate-600"></i>
+            Thông số kỹ thuật chi tiết
+        </h2>
+
+        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="divide-y divide-slate-100 text-sm">
+                <div class="grid grid-cols-3 p-4 bg-slate-50/50">
+                    <div class="font-medium text-slate-500">Số nhân / Số luồng</div>
+                    <div class="col-span-2 text-slate-800 font-medium">6 nhân / 12 luồng</div>
+                </div>
+                <div class="grid grid-cols-3 p-4">
+                    <div class="font-medium text-slate-500">Xung nhịp cơ bản</div>
+                    <div class="col-span-2 text-slate-800 font-medium">3.7 GHz</div>
+                </div>
+                <div class="grid grid-cols-3 p-4 bg-slate-50/50">
+                    <div class="font-medium text-slate-500">Xung nhịp tối đa (Boost)</div>
+                    <div class="col-span-2 text-slate-800 font-medium">Lên đến 4.6 GHz</div>
+                </div>
+                <div class="grid grid-cols-3 p-4">
+                    <div class="font-medium text-slate-500">Bộ nhớ đệm (Cache)</div>
+                    <div class="col-span-2 text-slate-800 font-medium">35 MB (L2: 3MB, L3: 32MB)</div>
+                </div>
+                <div class="grid grid-cols-3 p-4 bg-slate-50/50">
+                    <div class="font-medium text-slate-500">Socket hỗ trợ</div>
+                    <div class="col-span-2 text-slate-800 font-medium">AM4</div>
+                </div>
+                <div class="grid grid-cols-3 p-4">
+                    <div class="font-medium text-slate-500">Tiêu thụ điện năng (TDP)</div>
+                    <div class="col-span-2 text-slate-800 font-medium">65W</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script cục bộ bổ trợ hiệu ứng cho trang Chi tiết sản phẩm -->
+<script>
+    // Hàm tăng giảm số lượng ô Input
+    function changeQty(amount) {
+        const input = document.getElementById('productQuantity');
+        let currentVal = parseInt(input.value) || 1;
+        currentVal += amount;
+        if (currentVal < 1) currentVal = 1;
+        if (currentVal > 99) currentVal = 99;
+        input.value = currentVal;
+    }
+
+    // Hàm chuyển đổi ảnh chính khi click ảnh thumbnail nhỏ
+    function changeImage(src) {
+        document.getElementById('mainProductImage').src = src;
+
+        // Cập nhật lại đường viền active cho các nút ảnh nhỏ
+        const buttons = document.querySelectorAll('.thumbnail-btn');
+        buttons.forEach(btn => {
+            if(btn.children[0].src === src) {
+                btn.classList.add('border-primary-600');
+                btn.classList.remove('border-slate-200');
+            } else {
+                btn.classList.remove('border-primary-600');
+                btn.classList.add('border-slate-200');
+            }
+        });
+    }
+
+    // Hàm đóng gói số lượng trước khi đẩy vào hàm addToCart tổng ở Layout
+    function submitToCart(productId) {
+        const qty = parseInt(document.getElementById('productQuantity').value) || 1;
+        // Kiểm tra xem hàm gốc trong Layout của bạn có hỗ trợ truyền tham số số lượng không
+        // Nếu hàm addToCart gốc chỉ mặc định nhận 1 sản phẩm, bạn có thể chỉnh lại hàm addToCart trong layout để nhận biến số lượng.
+        if (typeof addToCart === "function") {
+            addToCart(productId);
+        } else {
+            alert("Đang kết nối hệ thống giỏ hàng...");
+        }
+    }
+</script>

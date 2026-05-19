@@ -1,371 +1,205 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿
+@model LanAnhComputer.Web.ViewModels.PagedResultViewModel<LanAnhComputer.Web.ViewModels.ProductViewModel>
+
 @{
     ViewData["Title"] = "Sản phẩm";
 }
 
 <div class="container mx-auto px-4 py-8">
+
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
         <a href="/" class="hover:text-primary-600">Trang chủ</a>
+
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        <span class="text-slate-800">Sản phẩm</span>
+
+        <span class="text-slate-800">
+            Sản phẩm
+        </span>
     </nav>
-    
+
     <div class="flex gap-8">
-        <!-- Sidebar Filters -->
+
+        <!-- Sidebar -->
         <aside class="hidden lg:block w-64 flex-shrink-0">
+
             <div class="bg-white rounded-xl border border-slate-200 p-6 sticky top-24">
+
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="font-semibold text-lg text-slate-800">Bộ lọc</h3>
-                    <button onclick="clearFilters()" class="text-sm text-primary-600 hover:underline">Xóa tất cả</button>
+                    <h3 class="font-semibold text-lg text-slate-800">
+                        Bộ lọc
+                    </h3>
+
+                    <button onclick="clearFilters()"
+                            class="text-sm text-primary-600 hover:underline">
+                        Xóa tất cả
+                    </button>
                 </div>
-                
+
                 <!-- Categories -->
                 <div class="mb-6">
-                    <h4 class="font-medium text-slate-800 mb-3">Danh mục</h4>
+                    <h4 class="font-medium text-slate-800 mb-3">
+                        Danh mục
+                    </h4>
+
                     <div class="space-y-2">
+
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Laptop Gaming</span>
+                            <input type="checkbox"
+                                   class="w-4 h-4 rounded border-slate-300 text-primary-600" />
+
+                            <span class="text-sm text-slate-600">
+                                Laptop Gaming
+                            </span>
                         </label>
+
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Laptop Văn phòng</span>
+                            <input type="checkbox"
+                                   class="w-4 h-4 rounded border-slate-300 text-primary-600" />
+
+                            <span class="text-sm text-slate-600">
+                                Laptop Văn phòng
+                            </span>
                         </label>
+
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">PC - Máy bàn</span>
+                            <input type="checkbox"
+                                   class="w-4 h-4 rounded border-slate-300 text-primary-600" />
+
+                            <span class="text-sm text-slate-600">
+                                Linh kiện
+                            </span>
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Linh kiện</span>
-                        </label>
+
                     </div>
                 </div>
-                
-                <!-- Price Range -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-slate-800 mb-3">Khoảng giá</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="price" class="w-4 h-4 border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Dưới 10 triệu</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="price" class="w-4 h-4 border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">10 - 20 triệu</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="price" class="w-4 h-4 border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">20 - 30 triệu</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="price" class="w-4 h-4 border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">30 - 50 triệu</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="price" class="w-4 h-4 border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Trên 50 triệu</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Brands -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-slate-800 mb-3">Thương hiệu</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">ASUS</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">MSI</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Dell</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">HP</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Lenovo</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Acer</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Apple</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- CPU -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-slate-800 mb-3">CPU</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Intel Core i5</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Intel Core i7</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Intel Core i9</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">AMD Ryzen 5</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">AMD Ryzen 7</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">Apple M3</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- RAM -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-slate-800 mb-3">RAM</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">8GB</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">16GB</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">32GB</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                            <span class="text-sm text-slate-600">64GB</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <button onclick="applyFilters()" class="w-full py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
+
+                <!-- Button -->
+                <button onclick="applyFilters()"
+                        class="w-full py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
+
                     Áp dụng bộ lọc
+
                 </button>
+
             </div>
+
         </aside>
-        
-        <!-- Main Content -->
+
+        <!-- Main -->
         <div class="flex-1">
+
             <!-- Header -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Tất cả sản phẩm</h1>
-                    <p class="text-slate-500">Hiển thị 1-20 của 256 sản phẩm</p>
+                    <h1 class="text-2xl font-bold text-slate-800">
+                        Tất cả sản phẩm
+                    </h1>
                 </div>
-                
+
+                <!-- Sort -->
                 <div class="flex items-center gap-4">
-                    <!-- Mobile filter button -->
-                    <button onclick="toggleMobileFilter()" class="lg:hidden flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
-                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                        Bộ lọc
-                    </button>
-                    
-                    <!-- Sort -->
-                    <select class="px-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-                        <option>Mặc định</option>
-                        <option>Giá: Thấp đến cao</option>
-                        <option>Giá: Cao đến thấp</option>
-                        <option>Mới nhất</option>
-                        <option>Bán chạy nhất</option>
-                        <option>Đánh giá cao</option>
+
+                    <select onchange="changeSort(this.value)" class="px-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+
+                        <option value="">Mặc định</option>
+
+                        <option value="price_asc">
+                            Giá: Thấp đến cao
+                        </option>
+
+                        <option value="price_desc">
+                            Giá: Cao đến thấp
+                        </option>
+
+                        <option value="newest">
+                            Mới nhất
+                        </option>
+
                     </select>
-                    
-                    <!-- View mode -->
-                    <div class="hidden sm:flex items-center gap-1 border border-slate-300 rounded-lg p-1">
-                        <button onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded bg-primary-600 text-white" data-mode="grid">
-                            <i data-lucide="grid-3x3" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="setViewMode('list')" class="view-mode-btn p-2 rounded text-slate-600 hover:bg-slate-100" data-mode="list">
-                            <i data-lucide="list" class="w-4 h-4"></i>
-                        </button>
-                    </div>
                 </div>
+
             </div>
-            
-            <!-- Active Filters -->
-            <div class="flex flex-wrap gap-2 mb-6" id="active-filters">
-                <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
-                    Laptop Gaming
-                    <button class="hover:text-primary-900"><i data-lucide="x" class="w-3 h-3"></i></button>
-                </span>
-                <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
-                    20 - 30 triệu
-                    <button class="hover:text-primary-900"><i data-lucide="x" class="w-3 h-3"></i></button>
-                </span>
-            </div>
-            
+
             <!-- Product Grid -->
-            <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                @for (int i = 1; i <= 12; i++)
+            <div id="product-grid"
+                 class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+
+                @if (Model.Items != null && Model.Items.Any())
                 {
-                    var products = new[] {
-                        new { Name = "ASUS ROG Strix G15", Category = "Laptop Gaming", Price = 32990000, OriginalPrice = 38990000, Badge = "Hot" },
-                        new { Name = "Lenovo IdeaPad Slim 5", Category = "Laptop Văn phòng", Price = 18990000, OriginalPrice = 0, Badge = "" },
-                        new { Name = "MSI Katana GF66", Category = "Laptop Gaming", Price = 25990000, OriginalPrice = 29990000, Badge = "Sale" },
-                        new { Name = "Dell XPS 15", Category = "Laptop Cao cấp", Price = 45990000, OriginalPrice = 0, Badge = "New" },
-                        new { Name = "HP Victus 16", Category = "Laptop Gaming", Price = 22990000, OriginalPrice = 26990000, Badge = "" },
-                        new { Name = "Acer Nitro 5", Category = "Laptop Gaming", Price = 19990000, OriginalPrice = 23990000, Badge = "Hot" },
-                        new { Name = "MacBook Air M3", Category = "Laptop Apple", Price = 27990000, OriginalPrice = 0, Badge = "New" },
-                        new { Name = "GIGABYTE G5", Category = "Laptop Gaming", Price = 21990000, OriginalPrice = 24990000, Badge = "Sale" },
-                        new { Name = "ThinkPad X1 Carbon", Category = "Laptop Doanh nhân", Price = 38990000, OriginalPrice = 0, Badge = "" },
-                        new { Name = "ROG Zephyrus G14", Category = "Laptop Gaming", Price = 35990000, OriginalPrice = 41990000, Badge = "Hot" },
-                        new { Name = "Surface Pro 9", Category = "Laptop 2-in-1", Price = 32990000, OriginalPrice = 36990000, Badge = "" },
-                        new { Name = "Razer Blade 15", Category = "Laptop Gaming", Price = 52990000, OriginalPrice = 0, Badge = "New" }
-                    };
-                    var p = products[(i - 1) % products.Length];
-                    var discount = p.OriginalPrice > 0 ? Math.Round((1 - (double)p.Price / p.OriginalPrice) * 100) : 0;
-                    
-                    <div class="group bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
-                        <div class="relative aspect-square bg-slate-100 overflow-hidden">
-                            <img src="https://placehold.co/300x300/e2e8f0/64748b?text=@Uri.EscapeDataString(p.Name)"
-                                 alt="@p.Name"
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            
-                            @if (!string.IsNullOrEmpty(p.Badge))
-                            {
-                                <span class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded-full
-                                    @(p.Badge == "Hot" ? "bg-red-500 text-white" :
-                                                                            p.Badge == "New" ? "bg-emerald-500 text-white" : "bg-orange-500 text-white")">
-                                    @p.Badge
-                                </span>
-                            }
-                            
-                            @if (discount > 0)
-                            {
-                                <span class="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
-                                    -@discount%
-                                </span>
-                            }
-                        </div>
-                        
-                        <div class="p-4">
-                            <p class="text-xs text-primary-600 font-medium mb-1">@p.Category</p>
-                            <h3 class="font-semibold text-slate-800 mb-2 line-clamp-2 min-h-[2.5rem]">@p.Name</h3>
-                            
-                            <div class="flex items-center gap-1 mb-2">
-                                <div class="flex text-amber-400">
-                                    @for (int j = 0; j < 5; j++)
-                                    {
-                                        <i data-lucide="star" class="w-3.5 h-3.5 @(j < 4 ? "fill-current" : "")"></i>
-                                    }
-                                </div>
-                                <span class="text-xs text-slate-500">(120)</span>
-                            </div>
-                            
-                            <div class="flex items-baseline gap-2 mb-3">
-                                <span class="text-lg font-bold text-red-600">@p.Price.ToString("N0")đ</span>
-                                @if (p.OriginalPrice > 0)
-                                {
-                                    <span class="text-sm text-slate-400 line-through">@p.OriginalPrice.ToString("N0")đ</span>
-                                }
-                            </div>
-                            
-                            <button class="w-full py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2">
-                                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                                Thêm vào giỏ
-                            </button>
-                        </div>
+                    @foreach (var product in Model.Items)
+                    {
+                        @await Html.PartialAsync("_ProductCard", product)
+                    }
+                }
+                else
+                {
+                    <div class="col-span-full text-center py-10">
+
+                        <p class="text-slate-500 text-lg">
+                            Không có sản phẩm nào
+                        </p>
+
                     </div>
                 }
+
             </div>
-            
+
             <!-- Pagination -->
             <div class="flex items-center justify-center gap-2 mt-8">
-                <button class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50" disabled>
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                </button>
-                <button class="w-10 h-10 bg-primary-600 text-white rounded-lg font-medium">1</button>
-                <button class="w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-100 font-medium">2</button>
-                <button class="w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-100 font-medium">3</button>
-                <span class="px-2">...</span>
-                <button class="w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-100 font-medium">13</button>
-                <button class="p-2 border border-slate-300 rounded-lg hover:bg-slate-100">
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Mobile Filter Modal -->
-<div id="mobile-filter-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/50" onclick="toggleMobileFilter()"></div>
-    <div class="absolute right-0 top-0 bottom-0 w-80 bg-white overflow-y-auto">
-        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="font-semibold text-lg">Bộ lọc</h3>
-            <button onclick="toggleMobileFilter()" class="p-2 hover:bg-slate-100 rounded-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div class="p-4">
-            <!-- Copy filter content here -->
-            <p class="text-slate-500">Bộ lọc mobile...</p>
-        </div>
-    </div>
-</div>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.PageNumber)
+                    {
+                        <button class="w-10 h-10 bg-primary-600 text-white rounded-lg font-medium">
+                            @i
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/Products?pageNumber=@i&sort=@Context.Request.Query["sort"]"
+                           class="w-10 h-10 border border-slate-300 rounded-lg hover:bg-slate-100 font-medium flex items-center justify-center">
 
-@section Scripts {
-    <script>
-        function clearFilters() {
-            document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
-                input.checked = false;
-            });
-        }
-    
-        function applyFilters() {
-            // Apply filter logic
-            alert('Đã áp dụng bộ lọc!');
-        }
-    
-        function toggleMobileFilter() {
-            document.getElementById('mobile-filter-modal').classList.toggle('hidden');
-        }
-    
-        function setViewMode(mode) {
-            const grid = document.getElementById('product-grid');
-            document.querySelectorAll('.view-mode-btn').forEach(btn => {
-                if (btn.dataset.mode === mode) {
-                    btn.classList.add('bg-primary-600', 'text-white');
-                    btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
-                } else {
-                    btn.classList.remove('bg-primary-600', 'text-white');
-                    btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+                            @i
+
+                        </a>
+                    }
                 }
-            });
-        
-            if (mode === 'list') {
-                grid.classList.remove('grid-cols-2', 'md:grid-cols-3', 'xl:grid-cols-4');
-                grid.classList.add('grid-cols-1');
-            } else {
-                grid.classList.add('grid-cols-2', 'md:grid-cols-3', 'xl:grid-cols-4');
-                grid.classList.remove('grid-cols-1');
-            }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+
+        function clearFilters() {
+
+            document.querySelectorAll('input[type="checkbox"], input[type="radio"]')
+                .forEach(input => {
+                    input.checked = false;
+                });
+
         }
+
+        function applyFilters() {
+
+            alert('Đã áp dụng bộ lọc!');
+
+        }
+             function changeSort(sortValue)
+        {
+            window.location.href =
+                `/Products?sort=${sortValue}`;
+        }
+
     </script>
 }
 

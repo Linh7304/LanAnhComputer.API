@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+
+    <div class="max-w-lg w-full text-center">
+
+        <div class="bg-white border border-slate-200 rounded-3xl p-10 shadow-sm">
+
+            <div class="w-28 h-28 mx-auto rounded-full bg-emerald-100 flex items-center justify-center mb-6">
+
+                <i data-lucide="check"
+                   class="w-16 h-16 text-emerald-600"></i>
+
+            </div>
+
+            <h1 class="text-3xl font-bold text-slate-800 mb-4">
+                Thanh toán thành công
+            </h1>
+
+            <p class="text-slate-500 mb-8">
+                Đơn hàng của bạn đã được ghi nhận.
+                Chúng tôi sẽ xử lý và giao hàng sớm nhất.
+            </p>
+
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-primary-700 text-sm font-medium">
+
+                <span id="countdown">6</span>
+
+                giây nữa sẽ chuyển tới trang đơn hàng...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    let time = 6;
+
+    const countdown = document.getElementById("countdown");
+
+    const interval = setInterval(() => {
+
+        time--;
+
+        countdown.innerText = time;
+
+        if (time <= 0) {
+
+            clearInterval(interval);
+
+            window.location.href = "/Orders";
+
+        }
+
+    }, 1000);
+
+</script>

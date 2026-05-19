@@ -1,19 +1,16 @@
-﻿using LanAnhComputer.API.Dtos;
-using LanAnhComputer.Web.Extensions;
 using LanAnhComputer.Web.Models;
-using LanAnhComputer.Web.ViewModels;
+using LanAnhComputer.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LanAnhComputer.Web.Controllers
 {
- 
     public class CartController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly ICartService _cartService;
 
-        public CartController(HttpClient httpClient)
+        public CartController(ICartService cartService)
         {
-            _httpClient = httpClient;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
@@ -22,32 +19,14 @@ namespace LanAnhComputer.Web.Controllers
 
             if (string.IsNullOrEmpty(token))
             {
-                return RedirectToAction( "Login", "Account", new { returnUrl = "/Cart" }
- );
+                return RedirectToAction("Login", "Account", new { returnUrl = "/Cart" });
             }
 
-            // Gắn token vào Header
-            _httpClient.AddJwt(token);
-            // 1. LẤY DATA TỪ API (DTO)
+            var model = await _cartService.GetCartItemsAsync(token);
 
-            var dtoList = await _httpClient.GetFromJsonAsync<List<CartItemDto>>("https://localhost:7132/api/cart");
-
-            // 2. MAP DTO → VIEWMODEL (ĐẶT NGAY SAU ĐOẠN TRÊN)
-            var model = dtoList?.Select(x => new CartItemViewModel
-            {
-                ProductId = x.ProductId,
-                ProductName = x.ProductName,
-                Price = x.Price,
-                Quantity = x.Quantity,
-                ImageUrl = x.ImageUrl,
-                Brand = x.Brand,
-                ProductType = x.ProductType
-            }).ToList();
-
-            // 3. RETURN VIEW
-            return View(model ?? new List<CartItemViewModel>());
+            return View(model);
         }
-         
+
         [HttpPost]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartRequestViewModel request)
         {
@@ -58,17 +37,14 @@ namespace LanAnhComputer.Web.Controllers
                 return Unauthorized();
             }
 
-            _httpClient.AddJwt(token);
+            var isSuccess = await _cartService.AddToCartAsync(request, token);
 
-            var response = await _httpClient.PostAsJsonAsync("https://localhost:7132/api/cart/add",request);
-
-            if (!response.IsSuccessStatusCode)
+            if (!isSuccess)
             {
                 return BadRequest();
             }
 
             return Ok();
         }
-
     }
 }

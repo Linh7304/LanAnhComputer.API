@@ -1,17 +1,16 @@
-﻿using LanAnhComputer.Web.Models;
-using LanAnhComputer.Web.ViewModels;
+using LanAnhComputer.Web.Models;
+using LanAnhComputer.Web.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
 
 namespace LanAnhComputer.Web.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IAccountService _accountService;
 
-        public AccountController(HttpClient httpClient)
+        public AccountController(IAccountService accountService)
         {
-            _httpClient = httpClient;
+            _accountService = accountService;
         }
 
         // LOGIN
@@ -20,11 +19,9 @@ namespace LanAnhComputer.Web.Controllers
             [FromBody] LoginViewModel model,
             string? returnUrl = null)
         {
-            var response = await _httpClient.PostAsJsonAsync(
-                "https://localhost:7132/api/Auth/login",
-                model);
+            var result = await _accountService.LoginAsync(model);
 
-            if (!response.IsSuccessStatusCode)
+            if (result == null)
             {
                 return BadRequest(new
                 {
@@ -32,14 +29,11 @@ namespace LanAnhComputer.Web.Controllers
                 });
             }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<AuthResponseViewModel>();
-
             // Lưu JWT
-            HttpContext.Session.SetString("JWT", result!.Token);
+            HttpContext.Session.SetString("JWT", result.Token);
 
             // Lưu tên user nếu API có trả về
-            HttpContext.Session.SetString("FullName",result.FullName ?? "User");
+            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
 
             return Ok(new
             {
@@ -54,11 +48,9 @@ namespace LanAnhComputer.Web.Controllers
         public async Task<IActionResult> Register(
             [FromBody] RegisterViewModel model)
         {
-            var response = await _httpClient.PostAsJsonAsync(
-                "https://localhost:7132/api/Auth/register",
-                model);
+            var result = await _accountService.RegisterAsync(model);
 
-            if (!response.IsSuccessStatusCode)
+            if (result == null)
             {
                 return BadRequest(new
                 {
@@ -66,12 +58,9 @@ namespace LanAnhComputer.Web.Controllers
                 });
             }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<AuthResponseViewModel>();
+            HttpContext.Session.SetString("JWT", result.Token);
 
-            HttpContext.Session.SetString("JWT", result!.Token);
-
-            HttpContext.Session.SetString("FullName",result.FullName ?? "User");
+            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
 
             return Ok(new
             {

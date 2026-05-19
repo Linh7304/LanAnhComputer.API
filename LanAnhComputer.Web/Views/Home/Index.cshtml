@@ -208,15 +208,12 @@
             @foreach (var product in Model)
             {
                 @await Html.PartialAsync("_ProductCard", (LanAnhComputer.Web.ViewModels.ProductViewModel)product)
-            }
-
-           
-           
-          
+            }    
         </div>
         
         <div class="text-center mt-8">
-            <a href="/san-pham" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
+            <a asp-controller="Products"
+               asp-action="Index" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
                 Xem tất cả sản phẩm
                 <i data-lucide="arrow-right" class="w-5 h-5"></i>
             </a>
