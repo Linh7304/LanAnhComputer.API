@@ -94,9 +94,15 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/admin/khach-hang" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Customers" ? "bg-sidebar-accent text-white" : "text-slate-300")">
+                    <a href="/admin/kho-hang" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Inventory" ? "bg-sidebar-accent text-white" : "text-slate-300")">
+                        <i data-lucide="warehouse" class="w-5 h-5"></i>
+                        <span>Kho hàng</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Users" ? "bg-sidebar-accent text-white" : "text-slate-300")">
                         <i data-lucide="users" class="w-5 h-5"></i>
-                        <span>Khách hàng</span>
+                        <span>Users</span>
                     </a>
                 </li>
                 <li>

@@ -28,6 +28,21 @@ builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
     client.BaseAddress = new Uri("https://localhost:7132/");
 });
 
+builder.Services.AddHttpClient<IOrderService, OrderService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<IAdminInventoryService, AdminInventoryService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<IUserService, UserService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
 // Session
 builder.Services.AddDistributedMemoryCache();
 

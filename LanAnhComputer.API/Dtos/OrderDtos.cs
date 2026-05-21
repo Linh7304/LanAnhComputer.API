@@ -80,3 +80,9 @@ public class OrderUpsertDto
     [MinLength(1, ErrorMessage = "Order must have at least 1 detail.")]
     public List<OrderDetailUpsertDto> Details { get; set; } = [];
 }
+
+public class UpdateOrderStatusDto
+{
+    [Required]
+    public string OrderStatus { get; set; } = null!;
+}

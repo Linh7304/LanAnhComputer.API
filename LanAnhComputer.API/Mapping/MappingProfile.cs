@@ -14,6 +14,11 @@ public class MappingProfile : Profile
         CreateMap<CategoryUpsertDto, Category>();
 
         CreateMap<Product, ProductDto>();
+        CreateMap<ProductImage, ProductImageDto>();
+        CreateMap<ProductSpecification, ProductSpecificationDto>();
+        CreateMap<ProductReview, ProductReviewDto>()
+            .ForMember(dest => dest.UserFullName,
+                opt => opt.MapFrom(src => src.User.FullName));
 
         // QUAN TRỌNG
         CreateMap<ProductUpsertDto, Product>()

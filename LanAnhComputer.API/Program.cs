@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using LanAnhComputer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // Cấu hình JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]!;

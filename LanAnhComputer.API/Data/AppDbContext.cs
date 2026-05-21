@@ -10,6 +10,9 @@ namespace LanAnhComputer.Data
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+        public DbSet<ProductSpecification> ProductSpecifications => Set<ProductSpecification>();
+        public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
         public DbSet<ChatbotHistory> ChatbotHistories => Set<ChatbotHistory>();
@@ -66,12 +69,20 @@ namespace LanAnhComputer.Data
                 entity.Property(x => x.ProductType).HasMaxLength(20).IsUnicode(false).IsRequired();
                 entity.Property(x => x.Brand).HasMaxLength(100);
                 entity.Property(x => x.Model).HasMaxLength(100);
+                entity.Property(x => x.ShortDescription).HasMaxLength(500);
+                entity.Property(x => x.Description);
+                entity.Property(x => x.ThumbnailUrl).HasMaxLength(500);
                 entity.Property(x => x.WarrantyMonths).HasDefaultValue(0);
                 entity.Property(x => x.CostPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0);
                 entity.Property(x => x.SalePrice).HasColumnType("decimal(18,2)");
                 entity.Property(x => x.StockQuantity).HasDefaultValue(0);
                 entity.Property(x => x.ReorderLevel).HasDefaultValue(0);
                 entity.Property(x => x.ImageUrl).HasMaxLength(500);
+                entity.Property(x => x.ViewCount).HasDefaultValue(0);
+                entity.Property(x => x.AverageRating).HasColumnType("decimal(3,2)").HasDefaultValue(0);
+                entity.Property(x => x.TotalReviews).HasDefaultValue(0);
+                entity.Property(x => x.SoldQuantity).HasDefaultValue(0);
+                entity.Property(x => x.LowStockThreshold).HasDefaultValue(0);
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
                 entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
                 entity.HasIndex(x => x.ProductCode).IsUnique();
@@ -82,6 +93,58 @@ namespace LanAnhComputer.Data
                       .HasForeignKey(x => x.CategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
                 entity.HasCheckConstraint("CK_Products_ProductType", "[ProductType] IN ('Computer','Component')");
+            });
+            // ProductImage
+            modelBuilder.Entity<ProductImage>(entity =>
+            {
+                entity.ToTable("ProductImages");
+                entity.HasKey(x => x.ProductImageId);
+                entity.Property(x => x.ImageUrl).HasMaxLength(500).IsRequired();
+                entity.Property(x => x.AltText).HasMaxLength(255);
+                entity.Property(x => x.IsPrimary).HasDefaultValue(false);
+                entity.Property(x => x.SortOrder).HasDefaultValue(0);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => x.ProductId);
+                entity.HasOne(x => x.Product)
+                      .WithMany(x => x.ProductImages)
+                      .HasForeignKey(x => x.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            // ProductSpecification
+            modelBuilder.Entity<ProductSpecification>(entity =>
+            {
+                entity.ToTable("ProductSpecifications");
+                entity.HasKey(x => x.ProductSpecificationId);
+                entity.Property(x => x.GroupName).HasMaxLength(100).IsRequired();
+                entity.Property(x => x.SpecKey).HasMaxLength(100).IsRequired();
+                entity.Property(x => x.SpecValue).HasMaxLength(500).IsRequired();
+                entity.Property(x => x.SortOrder).HasDefaultValue(0);
+                entity.HasIndex(x => new { x.ProductId, x.SpecKey });
+                entity.HasOne(x => x.Product)
+                      .WithMany(x => x.ProductSpecifications)
+                      .HasForeignKey(x => x.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            // ProductReview
+            modelBuilder.Entity<ProductReview>(entity =>
+            {
+                entity.ToTable("ProductReviews");
+                entity.HasKey(x => x.ProductReviewId);
+                entity.Property(x => x.Rating).IsRequired();
+                entity.Property(x => x.Comment).HasMaxLength(1000);
+                entity.Property(x => x.IsVisible).HasDefaultValue(true);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+                entity.HasIndex(x => new { x.ProductId, x.UserId }).IsUnique();
+                entity.HasIndex(x => new { x.ProductId, x.IsVisible });
+                entity.HasOne(x => x.Product)
+                      .WithMany(x => x.ProductReviews)
+                      .HasForeignKey(x => x.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasCheckConstraint("CK_ProductReviews_Rating", "[Rating] BETWEEN 1 AND 5");
             });
             // Order
             modelBuilder.Entity<Order>(entity =>

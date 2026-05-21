@@ -15,9 +15,17 @@ namespace LanAnhComputer.Controllers;
 public class UsersController(AppDbContext dbContext, IMapper mapper) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll([FromQuery] string? search = null)
     {
-        var users = await dbContext.Users
+        var query = dbContext.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var keyword = search.Trim();
+            query = query.Where(x => x.FullName.Contains(keyword) || x.Email.Contains(keyword));
+        }
+
+        var users = await query
             .OrderBy(x => x.FullName)
             .ProjectTo<UserDto>(mapper.ConfigurationProvider)
             .ToListAsync();
@@ -64,6 +72,38 @@ public class UsersController(AppDbContext dbContext, IMapper mapper) : Controlle
         if (user is null) return NotFound();
 
         dbContext.Users.Remove(user);
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id:long}/active")]
+    public async Task<IActionResult> UpdateActive(long id, [FromBody] UpdateUserActiveDto dto)
+    {
+        var user = await dbContext.Users.FindAsync(id);
+        if (user is null) return NotFound();
+
+        user.IsActive = dto.IsActive;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id:long}/role")]
+    public async Task<IActionResult> UpdateRole(long id, [FromBody] UpdateUserRoleDto dto)
+    {
+        var allowedRoles = new[] { "Admin", "Customer" };
+        if (!allowedRoles.Contains(dto.Role))
+        {
+            return BadRequest("Invalid role.");
+        }
+
+        var user = await dbContext.Users.FindAsync(id);
+        if (user is null) return NotFound();
+
+        user.Role = dto.Role;
+        user.UpdatedAt = DateTime.UtcNow;
+
         await dbContext.SaveChangesAsync();
         return NoContent();
     }

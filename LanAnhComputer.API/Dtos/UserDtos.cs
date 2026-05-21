@@ -16,6 +16,7 @@ public class UserDto
     public string? District { get; set; }
     public string? City { get; set; }
     public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class UserUpsertDto
@@ -45,4 +46,15 @@ public class UserUpsertDto
     public string? District { get; set; }
     public string? City { get; set; }
     public bool IsActive { get; set; } = true;
+}
+
+public class UpdateUserRoleDto
+{
+    [Required]
+    public string Role { get; set; } = "Customer";
+}
+
+public class UpdateUserActiveDto
+{
+    public bool IsActive { get; set; }
 }

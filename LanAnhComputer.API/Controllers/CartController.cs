@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using LanAnhComputer.Services;
 
 
 namespace LanAnhComputer.Controllers
 {
     [ApiController]
     [Route("api/cart")]
-    public class CartController(AppDbContext dbContext, IMapper mapper) : ControllerBase
+    public class CartController(AppDbContext dbContext, IMapper mapper, IInventoryService inventoryService) : ControllerBase
     {
         // GET CART
         [Authorize]
@@ -71,6 +72,17 @@ namespace LanAnhComputer.Controllers
                 await dbContext.SaveChangesAsync();
             }
 
+            var existingQuantity = await dbContext.CartItems
+                .Where(x => x.CartId == cart.CartId && x.ProductId == dto.ProductId)
+                .Select(x => (int?)x.Quantity)
+                .FirstOrDefaultAsync() ?? 0;
+
+            var stockCheck = await inventoryService.ValidateStockAsync(dto.ProductId, existingQuantity + dto.Quantity);
+            if (!stockCheck.IsValid)
+            {
+                return BadRequest(stockCheck.Error);
+            }
+
             var item = await dbContext.CartItems
                 .FirstOrDefaultAsync(x =>
                     x.CartId == cart.CartId &&
@@ -125,6 +137,12 @@ namespace LanAnhComputer.Controllers
 
             if (item == null)
                 return NotFound();
+
+            var stockCheck = await inventoryService.ValidateStockAsync(dto.ProductId, dto.Quantity);
+            if (!stockCheck.IsValid)
+            {
+                return BadRequest(stockCheck.Error);
+            }
 
             item.Quantity = dto.Quantity;
             item.UpdatedAt = DateTime.UtcNow;

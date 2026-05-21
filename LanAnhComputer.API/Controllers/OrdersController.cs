@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using LanAnhComputer.Services;
 
 namespace LanAnhComputer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class OrdersController(AppDbContext dbContext, IMapper mapper) : ControllerBase
+public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventoryService inventoryService) : ControllerBase
 {
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -85,8 +86,8 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
         var details = new List<OrderDetail>();
         foreach (var detail in dto.Details)
         {
-            var productExists = await dbContext.Products.AnyAsync(x => x.ProductId == detail.ProductId);
-            if (!productExists) return BadRequest($"Product {detail.ProductId} does not exist.");
+            var stockCheck = await inventoryService.ValidateStockAsync(detail.ProductId, detail.Quantity);
+            if (!stockCheck.IsValid) return BadRequest(stockCheck.Error);
 
             var lineTotal = detail.UnitPrice * detail.Quantity * (1 - detail.DiscountPercent / 100m);
             details.Add(new OrderDetail
@@ -104,6 +105,16 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
         order.ShippingFee = dto.ShippingFee;
         order.TotalAmount = order.SubTotal - order.DiscountAmount + order.ShippingFee;
         order.OrderDetails = details;
+
+        await inventoryService.DeductStockAsync(details.Select(x => (x.ProductId, x.Quantity)));
+        foreach (var detail in details)
+        {
+            var product = await dbContext.Products.FindAsync(detail.ProductId);
+            if (product != null)
+            {
+                product.SoldQuantity += detail.Quantity;
+            }
+        }
 
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync();
@@ -166,6 +177,31 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
         await dbContext.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPatch("{id:long}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateOrderStatusDto dto)
+    {
+        var allowedStatuses = new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+        if (!allowedStatuses.Contains(dto.OrderStatus))
+        {
+            return BadRequest("Invalid order status.");
+        }
+
+        var order = await dbContext.Orders.FindAsync(id);
+        if (order is null)
+        {
+            return NotFound();
+        }
+
+        order.OrderStatus = dto.OrderStatus;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     [HttpPost("checkout")]
     [Authorize(Roles = "Customer")]
     public async Task<ActionResult<OrderDto>> Checkout([FromBody] CheckoutDtos dto)
@@ -190,6 +226,10 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
 
         if (cartItems.Count == 0)
             return BadRequest("Cart is empty");
+
+        var stockCheck = await inventoryService.ValidateCartStockAsync(cart.CartId);
+        if (!stockCheck.IsValid)
+            return BadRequest(stockCheck.Error);
 
         // 3. Tạo Order
         var order = new Order
@@ -239,6 +279,14 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper) : Controll
         order.TotalAmount = order.SubTotal - order.DiscountAmount + order.ShippingFee;
 
         // 6. Save Order
+        await inventoryService.DeductStockAsync(
+            cartItems.Select(x => (x.ProductId, x.Quantity))
+        );
+        foreach (var item in cartItems)
+        {
+            item.Product.SoldQuantity += item.Quantity;
+        }
+
         dbContext.Orders.Add(order);
 
         // 7. Xoá cart items sau khi checkout

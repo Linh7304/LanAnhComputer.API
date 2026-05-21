@@ -1,0 +1,86 @@
+@model List<LanAnhComputer.Dtos.UserDto>
+
+@{
+    ViewData["Title"] = "Quan ly user";
+    ViewData["ActivePage"] = "Users";
+    Layout = "_AdminLayout";
+    var search = ViewBag.Search as string;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@TempData["Error"]</div>
+}
+
+<form method="get" action="/admin/users" class="flex items-center gap-3 mb-6">
+    <div class="relative">
+        <input name="search" value="@search" type="text" placeholder="Tim theo ten hoac email..."
+               class="w-96 pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+    </div>
+    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100">Tim</button>
+</form>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">UserId</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">FullName</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Email</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Phone</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Role</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">IsActive</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">CreatedAt</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Thao tac</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var user in Model ?? new List<LanAnhComputer.Dtos.UserDto>())
+                {
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-4 text-sm text-slate-600">@user.UserId</td>
+                        <td class="px-4 py-4 font-medium text-slate-800">@user.FullName</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">@user.Email</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">@user.Phone</td>
+                        <td class="px-4 py-4">
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full @(user.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-700")">@user.Role</span>
+                        </td>
+                        <td class="px-4 py-4">
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full @(user.IsActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")">@(user.IsActive ? "Active" : "Locked")</span>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-slate-600">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td class="px-4 py-4">
+                            <div class="flex justify-end gap-2">
+                                <a href="/admin/users/@user.UserId" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100">Chi tiet</a>
+                                <form method="post" action="/admin/users/@user.UserId/active">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="isActive" value="@(!user.IsActive).ToString().ToLowerInvariant()" />
+                                    <button class="px-3 py-1.5 text-sm border @(user.IsActive ? "border-red-200 text-red-700 hover:bg-red-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50") rounded-lg">
+                                        @(user.IsActive ? "Khoa" : "Mo")
+                                    </button>
+                                </form>
+                                <form method="post" action="/admin/users/@user.UserId/role">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="role" value="@(user.Role == "Admin" ? "Customer" : "Admin")" />
+                                    <button class="px-3 py-1.5 text-sm border border-purple-200 text-purple-700 rounded-lg hover:bg-purple-50">
+                                        @(user.Role == "Admin" ? "Thanh Customer" : "Thanh Admin")
+                                    </button>
+                                </form>
+                                <form method="post" action="/admin/users/@user.UserId/xoa" onsubmit="return confirm('Xoa user nay?')">
+                                    @Html.AntiForgeryToken()
+                                    <button class="px-3 py-1.5 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-50">Xoa</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

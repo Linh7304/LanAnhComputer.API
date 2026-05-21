@@ -1,0 +1,162 @@
+@model LanAnhComputer.Web.ViewModels.ProductViewModel
+
+@{
+    ViewData["Title"] = "Quan ly chi tiet san pham";
+    ViewData["ActivePage"] = "Products";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@TempData["Error"]</div>
+}
+
+<div class="mb-6 flex items-center justify-between gap-4">
+    <div>
+        <a href="/admin/san-pham" class="text-sm text-primary-600 hover:underline">Quay lai danh sach</a>
+        <h1 class="mt-2 text-2xl font-bold text-slate-800">@Model.ProductName</h1>
+        <p class="text-sm text-slate-500">SKU: @Model.ProductCode - @Model.Brand</p>
+    </div>
+    <a href="/Products/Details/@Model.ProductId" target="_blank" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50">
+        Xem trang khach hang
+    </a>
+</div>
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <section class="xl:col-span-2 rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-800">Gallery anh san pham</h2>
+            <p class="text-sm text-slate-500">Anh chinh se duoc dung lam thumbnail tren trang chi tiet.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+            @if (!Model.Images.Any())
+            {
+                <p class="col-span-full text-sm text-slate-500">Chua co anh gallery.</p>
+            }
+
+            @foreach (var image in Model.Images)
+            {
+                <div class="overflow-hidden rounded-lg border border-slate-200">
+                    <div class="aspect-square bg-slate-50">
+                        <img src="@image.ImageUrl" alt="@image.AltText" class="h-full w-full object-contain" />
+                    </div>
+                    <div class="space-y-3 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-500">Order: @image.SortOrder</span>
+                            @if (image.IsPrimary)
+                            {
+                                <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Anh chinh</span>
+                            }
+                        </div>
+                        <div class="flex gap-2">
+                            @if (!image.IsPrimary)
+                            {
+                                <form method="post" action="/admin/san-pham/@Model.ProductId/anh/@image.ProductImageId/primary">
+                                    @Html.AntiForgeryToken()
+                                    <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50">Dat chinh</button>
+                                </form>
+                            }
+                            <form method="post" action="/admin/san-pham/@Model.ProductId/anh/@image.ProductImageId/xoa" onsubmit="return confirm('Xoa anh nay?')">
+                                @Html.AntiForgeryToken()
+                                <button class="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">Xoa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <aside class="rounded-xl border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 p-5">
+            <h2 class="font-semibold text-slate-800">Them anh moi</h2>
+        </div>
+        <form method="post" action="/admin/san-pham/@Model.ProductId/anh/them" enctype="multipart/form-data" class="space-y-4 p-5">
+            @Html.AntiForgeryToken()
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700">File anh</label>
+                <input name="image" type="file" accept="image/*" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700">Alt text</label>
+                <input name="altText" value="@Model.ProductName" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700">Thu tu hien thi</label>
+                <input name="sortOrder" type="number" value="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input name="isPrimary" type="checkbox" value="true" class="rounded border-slate-300" />
+                Dat lam anh chinh
+            </label>
+            <button class="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700">Upload anh</button>
+        </form>
+    </aside>
+</div>
+
+<section class="mt-6 rounded-xl border border-slate-200 bg-white">
+    <div class="border-b border-slate-200 p-5">
+        <h2 class="font-semibold text-slate-800">Thong so ky thuat dong</h2>
+        <p class="text-sm text-slate-500">Moi dong gom nhom, ten thong so va gia tri. Vi du: CPU, Socket, AM5.</p>
+    </div>
+
+    <form method="post" action="/admin/san-pham/@Model.ProductId/thong-so" class="p-5">
+        @Html.AntiForgeryToken()
+        <div id="specRows" class="space-y-3">
+            @if (Model.DynamicSpecifications.Any())
+            {
+                @foreach (var spec in Model.DynamicSpecifications)
+                {
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
+                        <input name="groupName" value="@spec.GroupName" placeholder="Nhom" class="md:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        <input name="specKey" value="@spec.SpecKey" placeholder="Thong so" class="md:col-span-3 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        <input name="specValue" value="@spec.SpecValue" placeholder="Gia tri" class="md:col-span-5 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        <input name="sortOrder" value="@spec.SortOrder" type="number" class="md:col-span-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        <button type="button" onclick="removeSpecRow(this)" class="md:col-span-1 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Xoa</button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
+                    <input name="groupName" value="General" placeholder="Nhom" class="md:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input name="specKey" placeholder="Thong so" class="md:col-span-3 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input name="specValue" placeholder="Gia tri" class="md:col-span-5 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <input name="sortOrder" value="0" type="number" class="md:col-span-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <button type="button" onclick="removeSpecRow(this)" class="md:col-span-1 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Xoa</button>
+                </div>
+            }
+        </div>
+
+        <div class="mt-5 flex justify-end gap-3">
+            <button type="button" onclick="addSpecRow()" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Them dong</button>
+            <button class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">Luu thong so</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script>
+        function addSpecRow() {
+            const container = document.getElementById('specRows');
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-1 gap-3 md:grid-cols-12';
+            row.innerHTML = `
+                <input name="groupName" value="General" placeholder="Nhom" class="md:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input name="specKey" placeholder="Thong so" class="md:col-span-3 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input name="specValue" placeholder="Gia tri" class="md:col-span-5 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input name="sortOrder" value="0" type="number" class="md:col-span-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <button type="button" onclick="removeSpecRow(this)" class="md:col-span-1 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Xoa</button>`;
+            container.appendChild(row);
+        }
+
+        function removeSpecRow(button) {
+            button.closest('.grid').remove();
+        }
+    </script>
+}

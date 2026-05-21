@@ -32,5 +32,20 @@ namespace LanAnhComputer.Web.Controllers
 
             return View(product);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Review(long productId, int rating, string? comment)
+        {
+            var token = HttpContext.Session.GetString("JWT");
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            await _productService.SubmitReviewAsync(productId, rating, comment, token);
+
+            return RedirectToAction("Details", new { id = productId });
+        }
     }
 }

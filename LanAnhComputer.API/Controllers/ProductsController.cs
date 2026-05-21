@@ -96,16 +96,103 @@ public class ProductsController : ControllerBase
     // =========================
     // GET BY ID
     // =========================
-    [HttpGet("{id:long}")]
+    [HttpGet("{id:int}")]
     [AllowAnonymous]
-    public async Task<ActionResult<ProductDto>> GetById(long id)
+    public async Task<ActionResult<ProductDetailsDto>> GetById(int id)
     {
-        var entity = await dbContext.Products.FindAsync(id);
+        var entity = await dbContext.Products.FirstOrDefaultAsync(x => x.ProductId == id);
 
         if (entity == null)
             return NotFound();
 
-        return Ok(mapper.Map<ProductDto>(entity));
+        entity.ViewCount += 1;
+        await dbContext.SaveChangesAsync();
+
+        var dto = await dbContext.Products
+            .AsNoTracking()
+            .Where(x => x.ProductId == id)
+            .Select(x => new ProductDetailsDto
+            {
+                ProductId = x.ProductId,
+                CategoryId = x.CategoryId,
+                ProductCode = x.ProductCode,
+                ProductName = x.ProductName,
+                ProductType = x.ProductType,
+                Brand = x.Brand,
+                Model = x.Model,
+                ShortDescription = x.ShortDescription,
+                Description = x.Description,
+                ThumbnailUrl = x.ThumbnailUrl,
+                Specifications = x.Specifications,
+                WarrantyMonths = x.WarrantyMonths,
+                CostPrice = x.CostPrice,
+                SalePrice = x.SalePrice,
+                StockQuantity = x.StockQuantity,
+                ReorderLevel = x.ReorderLevel,
+                ImageUrl = x.ImageUrl,
+                ViewCount = x.ViewCount,
+                AverageRating = x.AverageRating,
+                TotalReviews = x.TotalReviews,
+                SoldQuantity = x.SoldQuantity,
+                IsActive = x.IsActive,
+                Images = x.ProductImages
+                    .OrderByDescending(i => i.IsPrimary)
+                    .ThenBy(i => i.SortOrder)
+                    .Select(i => new ProductImageDto
+                    {
+                        ProductImageId = i.ProductImageId,
+                        ImageUrl = i.ImageUrl,
+                        AltText = i.AltText,
+                        IsPrimary = i.IsPrimary,
+                        SortOrder = i.SortOrder
+                    })
+                    .ToList(),
+                DynamicSpecifications = x.ProductSpecifications
+                    .OrderBy(s => s.GroupName)
+                    .ThenBy(s => s.SortOrder)
+                    .Select(s => new ProductSpecificationDto
+                    {
+                        ProductSpecificationId = s.ProductSpecificationId,
+                        GroupName = s.GroupName,
+                        SpecKey = s.SpecKey,
+                        SpecValue = s.SpecValue,
+                        SortOrder = s.SortOrder
+                    })
+                    .ToList(),
+                ReviewsList = x.ProductReviews
+                    .Where(r => r.IsVisible)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new ProductReviewDto
+                    {
+                        ProductReviewId = r.ProductReviewId,
+                        ProductId = r.ProductId,
+                        UserId = r.UserId,
+                        UserFullName = r.User.FullName,
+                        Rating = r.Rating,
+                        Comment = r.Comment,
+                        IsVisible = r.IsVisible,
+                        CreatedAt = r.CreatedAt,
+                        UpdatedAt = r.UpdatedAt
+                    })
+                    .ToList()
+            })
+            .FirstAsync();
+
+        if (!dto.Images.Any())
+        {
+            var fallbackImage = dto.ThumbnailUrl ?? dto.ImageUrl;
+            if (!string.IsNullOrWhiteSpace(fallbackImage))
+            {
+                dto.Images.Add(new ProductImageDto
+                {
+                    ImageUrl = fallbackImage,
+                    AltText = dto.ProductName,
+                    IsPrimary = true
+                });
+            }
+        }
+
+        return Ok(dto);
     }
 
     // =========================
@@ -124,52 +211,32 @@ public class ProductsController : ControllerBase
             return BadRequest("Category does not exist.");
         }
 
-        string? imageUrl = null;
-
-        // =========================
-        // UPLOAD IMAGE
-        // =========================
-        if (dto.Image != null)
-        {
-            var uploadsFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "products"
-            );
-
-            // tạo folder nếu chưa có
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            // tạo tên file random
-            var fileName =
-                $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
-
-            var filePath = Path.Combine(
-                uploadsFolder,
-                fileName
-            );
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await dto.Image.CopyToAsync(stream);
-            }
-
-            imageUrl = $"/uploads/products/{fileName}";
-        }
+        var imageUrl = await SaveUploadedProductImageAsync(dto.Image);
 
         var entity = mapper.Map<Product>(dto);
 
         entity.ImageUrl = imageUrl;
+        entity.ThumbnailUrl = dto.ThumbnailUrl ?? imageUrl;
 
         entity.CreatedAt = DateTime.UtcNow;
 
         dbContext.Products.Add(entity);
 
         await dbContext.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+        {
+            dbContext.ProductImages.Add(new ProductImage
+            {
+                ProductId = entity.ProductId,
+                ImageUrl = imageUrl,
+                AltText = entity.ProductName,
+                IsPrimary = true,
+                SortOrder = 0,
+                CreatedAt = DateTime.UtcNow
+            });
+            await dbContext.SaveChangesAsync();
+        }
 
         return CreatedAtAction(
             nameof(GetById),
@@ -181,10 +248,10 @@ public class ProductsController : ControllerBase
     // =========================
     // UPDATE
     // =========================
-    [HttpPut("{id:long}")]
+    [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(
-        long id,
+        int id,
         [FromForm] ProductUpsertDto dto)
     {
         var entity = await dbContext.Products.FindAsync(id);
@@ -196,37 +263,25 @@ public class ProductsController : ControllerBase
 
         mapper.Map(dto, entity);
 
-        // =========================
-        // UPLOAD NEW IMAGE
-        // =========================
         if (dto.Image != null)
         {
-            var uploadsFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "products"
-            );
+            entity.ImageUrl = await SaveUploadedProductImageAsync(dto.Image);
+            entity.ThumbnailUrl = entity.ImageUrl;
 
-            if (!Directory.Exists(uploadsFolder))
+            var currentPrimary = await dbContext.ProductImages
+                .Where(x => x.ProductId == id && x.IsPrimary)
+                .ToListAsync();
+            currentPrimary.ForEach(x => x.IsPrimary = false);
+
+            dbContext.ProductImages.Add(new ProductImage
             {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var fileName =
-                $"{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
-
-            var filePath = Path.Combine(
-                uploadsFolder,
-                fileName
-            );
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await dto.Image.CopyToAsync(stream);
-            }
-
-            entity.ImageUrl = $"/uploads/products/{fileName}";
+                ProductId = id,
+                ImageUrl = entity.ImageUrl,
+                AltText = entity.ProductName,
+                IsPrimary = true,
+                SortOrder = 0,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         entity.UpdatedAt = DateTime.UtcNow;
@@ -236,12 +291,143 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:long}/images")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ProductImageDto>> AddImage(int id, [FromForm] ProductImageUpsertDto dto)
+    {
+        var product = await dbContext.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        var imageUrl = await SaveUploadedProductImageAsync(dto.Image);
+        imageUrl ??= dto.ImageUrl;
+
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return BadRequest("Image file or image URL is required.");
+        }
+
+        if (dto.IsPrimary)
+        {
+            var currentPrimary = await dbContext.ProductImages
+                .Where(x => x.ProductId == id && x.IsPrimary)
+                .ToListAsync();
+            currentPrimary.ForEach(x => x.IsPrimary = false);
+            product.ImageUrl = imageUrl;
+            product.ThumbnailUrl = imageUrl;
+        }
+
+        var image = new ProductImage
+        {
+            ProductId = id,
+            ImageUrl = imageUrl,
+            AltText = dto.AltText ?? product.ProductName,
+            IsPrimary = dto.IsPrimary,
+            SortOrder = dto.SortOrder,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        dbContext.ProductImages.Add(image);
+        await dbContext.SaveChangesAsync();
+
+        return Ok(new ProductImageDto
+        {
+            ProductImageId = image.ProductImageId,
+            ImageUrl = image.ImageUrl,
+            AltText = image.AltText,
+            IsPrimary = image.IsPrimary,
+            SortOrder = image.SortOrder
+        });
+    }
+
+    [HttpPut("{id:int}/images/{imageId:int}/primary")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SetPrimaryImage(int id, int imageId)
+    {
+        var product = await dbContext.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        var image = await dbContext.ProductImages
+            .FirstOrDefaultAsync(x => x.ProductImageId == imageId && x.ProductId == id);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        var currentPrimary = await dbContext.ProductImages
+            .Where(x => x.ProductId == id && x.IsPrimary)
+            .ToListAsync();
+        currentPrimary.ForEach(x => x.IsPrimary = false);
+
+        image.IsPrimary = true;
+        product.ImageUrl = image.ImageUrl;
+        product.ThumbnailUrl = image.ImageUrl;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}/images/{imageId:int}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteImage(int id, int imageId)
+    {
+        var image = await dbContext.ProductImages
+            .FirstOrDefaultAsync(x => x.ProductImageId == imageId && x.ProductId == id);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        dbContext.ProductImages.Remove(image);
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}/specifications")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateSpecifications(int id, [FromBody] List<ProductSpecificationUpsertDto> dto)
+    {
+        var productExists = await dbContext.Products.AnyAsync(x => x.ProductId == id);
+        if (!productExists)
+        {
+            return NotFound();
+        }
+
+        var currentSpecifications = await dbContext.ProductSpecifications
+            .Where(x => x.ProductId == id)
+            .ToListAsync();
+        dbContext.ProductSpecifications.RemoveRange(currentSpecifications);
+
+        var newSpecifications = dto
+            .Where(x => !string.IsNullOrWhiteSpace(x.SpecKey) && !string.IsNullOrWhiteSpace(x.SpecValue))
+            .Select(x => new ProductSpecification
+            {
+                ProductId = id,
+                GroupName = string.IsNullOrWhiteSpace(x.GroupName) ? "General" : x.GroupName.Trim(),
+                SpecKey = x.SpecKey.Trim(),
+                SpecValue = x.SpecValue.Trim(),
+                SortOrder = x.SortOrder
+            });
+
+        dbContext.ProductSpecifications.AddRange(newSpecifications);
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     // =========================
     // DELETE
     // =========================
-    [HttpDelete("{id:long}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(long id)
+    public async Task<IActionResult> Delete(int id)
     {
         var entity = await dbContext.Products.FindAsync(id);
 
@@ -255,5 +441,32 @@ public class ProductsController : ControllerBase
         await dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static async Task<string?> SaveUploadedProductImageAsync(IFormFile? image)
+    {
+        if (image == null || image.Length == 0)
+        {
+            return null;
+        }
+
+        var uploadsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "uploads",
+            "products");
+
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await image.CopyToAsync(stream);
+
+        return $"/uploads/products/{fileName}";
     }
 }
