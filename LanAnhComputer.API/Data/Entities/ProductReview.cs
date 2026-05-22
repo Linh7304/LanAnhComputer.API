@@ -4,11 +4,11 @@ namespace LanAnhComputer.API.Data.Entities
 {
     public class ProductReview
     {
-        public int ProductReviewId { get; set; }
+        public long ProductReviewId { get; set; }
 
-        public int ProductId { get; set; }
+        public long ProductId { get; set; }
 
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         public int Rating { get; set; }
 

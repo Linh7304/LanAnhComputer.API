@@ -96,9 +96,9 @@ public class ProductsController : ControllerBase
     // =========================
     // GET BY ID
     // =========================
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:long}")]
     [AllowAnonymous]
-    public async Task<ActionResult<ProductDetailsDto>> GetById(int id)
+    public async Task<ActionResult<ProductDetailsDto>> GetById(long id)
     {
         var entity = await dbContext.Products.FirstOrDefaultAsync(x => x.ProductId == id);
 
@@ -200,15 +200,22 @@ public class ProductsController : ControllerBase
     // =========================
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ProductDto>> Create(
-        [FromForm] ProductUpsertDto dto)
+    public async Task<ActionResult<ProductDto>> Create([FromForm] ProductUpsertDto dto)
     {
-        var categoryExists = await dbContext.Categories
-            .AnyAsync(x => x.CategoryId == dto.CategoryId);
+        var validTypes = new[] { "Computer", "Component" };
+
+        if (!validTypes.Contains(dto.ProductType))
+        {
+            return BadRequest(new
+            {
+                message = "Loại sản phẩm không hợp lệ."
+            });
+        }
+        var categoryExists = await dbContext.Categories.AnyAsync(x => x.CategoryId == dto.CategoryId);
 
         if (!categoryExists)
         {
-            return BadRequest("Category does not exist.");
+            return BadRequest("Danh mục không tồn tại");
         }
 
         var imageUrl = await SaveUploadedProductImageAsync(dto.Image);
@@ -248,10 +255,10 @@ public class ProductsController : ControllerBase
     // =========================
     // UPDATE
     // =========================
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:long}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(
-        int id,
+        long id,
         [FromForm] ProductUpsertDto dto)
     {
         var entity = await dbContext.Products.FindAsync(id);
@@ -293,7 +300,7 @@ public class ProductsController : ControllerBase
 
     [HttpPost("{id:long}/images")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ProductImageDto>> AddImage(int id, [FromForm] ProductImageUpsertDto dto)
+    public async Task<ActionResult<ProductImageDto>> AddImage(long id, [FromForm] ProductImageUpsertDto dto)
     {
         var product = await dbContext.Products.FindAsync(id);
         if (product == null)
@@ -342,9 +349,9 @@ public class ProductsController : ControllerBase
         });
     }
 
-    [HttpPut("{id:int}/images/{imageId:int}/primary")]
+    [HttpPut("{id:long}/images/{imageId:long}/primary")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> SetPrimaryImage(int id, int imageId)
+    public async Task<IActionResult> SetPrimaryImage(long id, long imageId)
     {
         var product = await dbContext.Products.FindAsync(id);
         if (product == null)
@@ -373,9 +380,9 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id:int}/images/{imageId:int}")]
+    [HttpDelete("{id:long}/images/{imageId:long}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteImage(int id, int imageId)
+    public async Task<IActionResult> DeleteImage(long id, long imageId)
     {
         var image = await dbContext.ProductImages
             .FirstOrDefaultAsync(x => x.ProductImageId == imageId && x.ProductId == id);
@@ -390,9 +397,9 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("{id:int}/specifications")]
+    [HttpPut("{id:long}/specifications")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateSpecifications(int id, [FromBody] List<ProductSpecificationUpsertDto> dto)
+    public async Task<IActionResult> UpdateSpecifications(long id, [FromBody] List<ProductSpecificationUpsertDto> dto)
     {
         var productExists = await dbContext.Products.AnyAsync(x => x.ProductId == id);
         if (!productExists)

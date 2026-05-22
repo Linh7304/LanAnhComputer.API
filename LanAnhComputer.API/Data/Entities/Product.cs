@@ -4,7 +4,7 @@ namespace LanAnhComputer.Data.Entities
 {
     public class Product
     {
-        public int ProductId { get; set; }
+        public long ProductId { get; set; }
         public int CategoryId { get; set; }
         public string ProductCode { get; set; } = null!;
         public string ProductName { get; set; } = null!;
@@ -22,7 +22,7 @@ namespace LanAnhComputer.Data.Entities
         public int ReorderLevel { get; set; }
         public string? ImageUrl { get; set; }
         public int ViewCount { get; set; }
-        public decimal AverageRating { get; set; }
+        public double AverageRating { get; set; }
         public int TotalReviews { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }

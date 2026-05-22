@@ -4,7 +4,7 @@
     {
         public long OrderDetailId { get; set; }
         public long OrderId { get; set; }
-        public int ProductId { get; set; }
+        public long ProductId { get; set; }
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
         public decimal DiscountPercent { get; set; }

@@ -79,7 +79,7 @@ namespace LanAnhComputer.Data
                 entity.Property(x => x.ReorderLevel).HasDefaultValue(0);
                 entity.Property(x => x.ImageUrl).HasMaxLength(500);
                 entity.Property(x => x.ViewCount).HasDefaultValue(0);
-                entity.Property(x => x.AverageRating).HasColumnType("decimal(3,2)").HasDefaultValue(0);
+                entity.Property(x => x.AverageRating).HasColumnType("float").HasDefaultValue(0);
                 entity.Property(x => x.TotalReviews).HasDefaultValue(0);
                 entity.Property(x => x.SoldQuantity).HasDefaultValue(0);
                 entity.Property(x => x.LowStockThreshold).HasDefaultValue(0);

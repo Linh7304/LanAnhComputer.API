@@ -118,9 +118,18 @@ public class ProductReviewsController : ControllerBase
             .Where(x => x.ProductId == productId && x.IsVisible);
 
         product.TotalReviews = await visibleReviews.CountAsync();
-        product.AverageRating = product.TotalReviews == 0
-            ? 0
-            : Math.Round((decimal)await visibleReviews.AverageAsync(x => x.Rating), 2);
+        if (product.TotalReviews == 0)
+        {
+            product.AverageRating = 0;
+        }
+        else
+        {
+            var avgRating = await visibleReviews
+                .AverageAsync(x => (double)x.Rating);
+
+            product.AverageRating = Math.Round(avgRating, 2);
+        }
+
         product.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();

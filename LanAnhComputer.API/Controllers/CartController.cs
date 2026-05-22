@@ -33,16 +33,16 @@ namespace LanAnhComputer.Controllers
             if (cart == null)
                 return Ok(new List<object>());
 
-            var result = cart.CartItems.Select(x => new  //(entity->dto ) 
+            var result = cart.CartItems.Select(x => new CartItemDto
             {
-                productId = x.ProductId,
-                productName = x.Product.ProductName,
-                price = x.Product.SalePrice,
-                quantity = x.Quantity,
-                totalPrice = x.Product.SalePrice * x.Quantity,
-                brand = x.Product.Brand,
-                imageUrl = x.Product.ImageUrl
-            });
+                ProductId = x.ProductId,
+                ProductName = x.Product.ProductName,
+                Price = x.Product.SalePrice,
+                Quantity = x.Quantity,
+                ImageUrl = x.Product.ImageUrl ?? "",
+                Brand = x.Product.Brand ?? "",
+                ProductType = x.Product.ProductType ?? ""
+            }).ToList();
 
             return Ok(result);
 

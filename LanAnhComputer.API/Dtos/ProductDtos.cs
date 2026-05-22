@@ -4,7 +4,7 @@ namespace LanAnhComputer.Dtos;
 
 public class ProductDto
 {
-    public int ProductId { get; set; }
+    public long ProductId { get; set; }
     public int CategoryId { get; set; }
     public string ProductCode { get; set; } = null!;
     public string ProductName { get; set; } = null!;
@@ -21,8 +21,8 @@ public class ProductDto
     public int StockQuantity { get; set; }
     public int ReorderLevel { get; set; }
     public string? ImageUrl { get; set; }
-    public long ViewCount { get; set; }
-    public decimal AverageRating { get; set; }
+    public int ViewCount { get; set; }
+    public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int SoldQuantity { get; set; }
     public bool IsActive { get; set; }

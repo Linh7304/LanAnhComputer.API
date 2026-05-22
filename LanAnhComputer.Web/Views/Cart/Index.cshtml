@@ -40,7 +40,7 @@
                                     <img src="@item.ImageUrl"
                                          alt="@item.ProductName"
                                          class="w-full h-full object-cover"
-                                         onerror="this.src='/images/no-image.png'" />
+                                         onerror="this.onerror=null;this.src='/images/no-image.png';" />
                                 </div>
                                 <div class="flex-1">
                                     <h3 class="font-medium text-slate-800 mb-1 line-clamp-2">@item.ProductName</h3>
@@ -239,7 +239,7 @@
                     quantity: qty
                 })
 
-            })f
+            })
             .then(response => {
 
                 if (response.ok) {

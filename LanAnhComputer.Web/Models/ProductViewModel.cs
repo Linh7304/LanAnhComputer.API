@@ -24,7 +24,7 @@ namespace LanAnhComputer.Web.ViewModels
         public int StockQuantity { get; set; }
         public int ReorderLevel { get; set; }
         public long ViewCount { get; set; }
-        public decimal AverageRating { get; set; }
+        public double AverageRating { get; set; }
         public int TotalReviews { get; set; }
         public int SoldQuantity { get; set; }
         public bool IsActive { get; set; }
