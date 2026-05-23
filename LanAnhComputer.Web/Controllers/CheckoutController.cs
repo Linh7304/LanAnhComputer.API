@@ -1,7 +1,8 @@
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.Services;
-using Microsoft.AspNetCore.Mvc;
 using LanAnhComputer.Web.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 
 namespace LanAnhComputer.Web.Controllers
 {
@@ -85,14 +86,25 @@ namespace LanAnhComputer.Web.Controllers
                 return Redirect("/");
             }
 
-            var order = new OrderViewModel
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization =
+       new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.PostAsync(
+                $"https://localhost:7132/api/payment/create/{orderId}",
+                null
+            );
+
+            if (!response.IsSuccessStatusCode)
             {
-                OrderId = orderId,
+                return RedirectToAction("Index");
+            }
 
-                TotalAmount = 15000000
-            };
+            var payment =
+                await response.Content.ReadFromJsonAsync<PayOSResponseViewModel>();
 
-            return View(order);
+            return View(payment);
+
         }
 
         public IActionResult Complete()

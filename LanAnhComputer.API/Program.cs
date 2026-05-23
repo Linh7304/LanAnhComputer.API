@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using LanAnhComputer.Services;
+using PayOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSingleton(x =>
+{
+    var config = x.GetRequiredService<IConfiguration>();
+
+    return new PayOSClient(
+        config["PayOS:ClientId"]!,
+        config["PayOS:ApiKey"]!,
+        config["PayOS:ChecksumKey"]!
+    );
+});
+
 var app = builder.Build();
 
 // --- 3. Cấu hình Middleware (Luồng chạy) ---
@@ -97,6 +109,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(); // Truy cập tại /swagger
 }
+
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll"); 

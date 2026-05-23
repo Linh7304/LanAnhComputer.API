@@ -26,6 +26,17 @@
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
+        public long? PayOSOrderCode { get; set; }
+
+        public string? PaymentLinkId { get; set; }
+
+        public string? CheckoutUrl { get; set; }
+
+        public DateTime? PaidAt { get; set; }
+
+        public string? TransactionId { get; set; }
+
+
         public User User { get; set; } = null!;
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 

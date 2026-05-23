@@ -4,18 +4,30 @@ namespace LanAnhComputer.Web.Controllers
 {
     public class OrdersController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
         [HttpGet]
-        public IActionResult CheckPaymentStatus(long orderId)
+        public async Task<IActionResult> CheckPaymentStatus(long orderId)
         {
-            // demo fake
+            var client = new HttpClient();
+
+            var response = await client.GetAsync(
+                $"https://localhost:7132/api/payment/status/{orderId}"
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Json(new
+                {
+                    success = false
+                });
+            }
+
+            var result =
+                await response.Content.ReadFromJsonAsync<dynamic>();
 
             return Json(new
             {
-                success = true
+                success =
+                    result?.paymentStatus?.ToString() == "PAID"
             });
         }
     }

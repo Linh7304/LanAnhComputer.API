@@ -1,4 +1,4 @@
-﻿@model LanAnhComputer.Web.Models.OrderViewModel
+﻿@model LanAnhComputer.Web.Models.PayOSResponseViewModel
 
 @{
     ViewData["Title"] = "Thanh toán";
@@ -31,47 +31,21 @@
 
                 <!-- QR -->
                 <div class="flex justify-center">
-
-                    <img src="https://img.vietqr.io/image/MB-123456789-compact2.png?amount=@Model.TotalAmount&addInfo=DH@Model.OrderId"
+                    <img src="@Model.QrCode"
                          class="w-72 h-72 border rounded-2xl p-3 bg-white" />
-
+                   
                 </div>
 
-                <!-- INFO -->
                 <div class="space-y-4">
 
                     <div class="p-4 rounded-xl bg-slate-50 border">
 
                         <p class="text-sm text-slate-500 mb-1">
-                            Ngân hàng
+                            Mã thanh toán
                         </p>
 
                         <p class="font-semibold text-lg">
-                            MB BANK
-                        </p>
-
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-slate-50 border">
-
-                        <p class="text-sm text-slate-500 mb-1">
-                            Số tài khoản
-                        </p>
-
-                        <p class="font-semibold text-lg">
-                            123456789
-                        </p>
-
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-slate-50 border">
-
-                        <p class="text-sm text-slate-500 mb-1">
-                            Chủ tài khoản
-                        </p>
-
-                        <p class="font-semibold text-lg">
-                            lANANHCOMPUTER
+                            @Model.OrderCode
                         </p>
 
                     </div>
@@ -83,22 +57,18 @@
                         </p>
 
                         <p class="font-bold text-2xl text-red-600">
-                            @Model.TotalAmount.ToString("N0")đ
+                            @Model.Amount.ToString("N0")đ
                         </p>
 
                     </div>
 
-                    <div class="p-4 rounded-xl bg-amber-50 border border-amber-100">
+                    <a href="@Model.CheckoutUrl"
+                       target="_blank"
+                       class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition">
 
-                        <p class="text-sm text-slate-500 mb-1">
-                            Nội dung chuyển khoản
-                        </p>
+                        Mở trang thanh toán PayOS
 
-                        <p class="font-bold text-lg text-amber-700">
-                            DH@Model.OrderId
-                        </p>
-
-                    </div>
+                    </a>
 
                 </div>
 

@@ -45,6 +45,9 @@ public class OrderDto
     public decimal ShippingFee { get; set; }
     public decimal TotalAmount { get; set; }
     public List<OrderDetailDto> OrderDetails { get; set; } = [];
+    public string? CheckoutUrl { get; set; }
+
+
 }
 
 public class OrderUpsertDto
