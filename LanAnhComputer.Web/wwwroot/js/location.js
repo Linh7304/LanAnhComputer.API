@@ -1,4 +1,4 @@
-﻿const provinceSelect = document.getElementById("province");
+const provinceSelect = document.getElementById("province");
 const wardSelect = document.getElementById("ward");
 
 // 1. Load tất cả tỉnh

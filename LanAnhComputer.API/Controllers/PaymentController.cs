@@ -1,4 +1,4 @@
-﻿using LanAnhComputer.Data;
+using LanAnhComputer.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayOS;
@@ -14,85 +14,122 @@ public class PaymentController : ControllerBase
 {
     private readonly PayOSClient _client;
     private readonly AppDbContext _dbContext;
+    private readonly IConfiguration _configuration;
 
     public PaymentController(
         PayOSClient client,
-        AppDbContext dbContext)
+        AppDbContext dbContext,
+        IConfiguration configuration)
     {
         _client = client;
         _dbContext = dbContext;
+        _configuration = configuration;
     }
 
     [HttpPost("create/{orderId}")]
     public async Task<IActionResult> CreatePayment(long orderId)
     {
-        var order = await _dbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        var order = await _dbContext.Orders
+            .FirstOrDefaultAsync(x => x.OrderId == orderId);
 
-        if (order == null)     return NotFound();
+        if (order == null)
+            return NotFound();
 
-        // tạo orderCode riêng cho PayOS
-        var payOSOrderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        // ❗ nếu đã thanh toán thì không tạo lại
+        if (order.PaymentStatus == "PAID")
+            return BadRequest("Order already paid");
+
+        // ❗ nếu đã có link thì trả lại luôn
+        if (!string.IsNullOrEmpty(order.PaymentLinkId))
+        {
+            return Ok(new
+            {
+                order.OrderId,
+                order.CheckoutUrl
+            });
+        }
+
+        // ✔ FIX: dùng OrderId làm PayOSOrderCode
+        var payOSOrderCode = order.OrderId;
+
+        var returnUrl = _configuration["PayOS:ReturnUrl"]
+            ?? "https://localhost:7020/Checkout/Complete";
+
+        var cancelUrl = _configuration["PayOS:CancelUrl"]
+            ?? "https://localhost:7020/Checkout";
 
         var paymentRequest = new CreatePaymentLinkRequest
         {
             OrderCode = payOSOrderCode,
-
             Amount = (int)order.TotalAmount,
-
             Description = $"DH{order.OrderId}",
-
-            ReturnUrl = "https://localhost:7146/checkout/success",
-
-            CancelUrl =  "https://localhost:7146/checkout/cancel"
+            ReturnUrl = returnUrl,
+            CancelUrl = cancelUrl
         };
 
         var paymentLink = await _client.PaymentRequests.CreateAsync(paymentRequest);
 
-        // lưu DB
         order.PayOSOrderCode = payOSOrderCode;
-
         order.PaymentLinkId = paymentLink.PaymentLinkId;
-
         order.CheckoutUrl = paymentLink.CheckoutUrl;
-
         order.PaymentStatus = "PENDING";
 
         await _dbContext.SaveChangesAsync();
 
         return Ok(new
         {
-            OrderId = order.OrderId,
-            CheckoutUrl = paymentLink.CheckoutUrl,
-            QrCode = paymentLink.QrCode,
-            OrderCode = paymentLink.OrderCode,
-            Amount = paymentLink.Amount
+            order.OrderId,
+            paymentLink.CheckoutUrl,
+            paymentLink.QrCode
         });
     }
 
     [HttpPost("webhook")]
-    public async Task<IActionResult> Webhook(
-        [FromBody] Webhook webhook)
+    public async Task<IActionResult> Webhook([FromBody] Webhook webhook)
     {
-        var data = await _client.Webhooks.VerifyAsync(webhook);
+        try
+        {
+            // 1. Verify webhook (chống fake)
+            var data = await _client.Webhooks.VerifyAsync(webhook);
 
-        var orderCode = data.OrderCode;
+            var orderCode = data.OrderCode;
 
-        var order = await _dbContext.Orders.FirstOrDefaultAsync(x =>x.PayOSOrderCode == orderCode);
+            // 2. Tìm order
+            var order = await _dbContext.Orders
+                .FirstOrDefaultAsync(x => x.PayOSOrderCode == orderCode);
 
-        if (order == null) return NotFound();
+            // ❗ KHÔNG return NotFound trong webhook
+            if (order == null)
+            {
+                Console.WriteLine($"Order not found: {orderCode}");
+                return Ok();
+            }
 
-        order.PaymentStatus = "PAID";
+            // 3. CHỐNG xử lý lại nhiều lần (idempotent)
+            if (order.PaymentStatus == "PAID")
+            {
+                return Ok();
+            }
 
-        order.OrderStatus = "CONFIRMED";
+            // 4. Update trạng thái
+            order.PaymentStatus = "PAID";
+            order.OrderStatus = "CONFIRMED";
+            order.PaidAt = DateTime.UtcNow;
+            order.TransactionId = data.Reference;
 
-        order.PaidAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
 
-        order.TransactionId = data.Reference;
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            // ❗ Quan trọng: webhook KHÔNG được fail
+            Console.WriteLine("WEBHOOK ERROR: " + ex.Message);
 
-        await _dbContext.SaveChangesAsync();
-
-        return Ok();
+            return Ok(); // luôn trả 200 để PayOS không retry lỗi
+        }
     }
+
     [HttpPost("confirm-webhook")]
     public async Task<IActionResult> ConfirmWebhook()
     {

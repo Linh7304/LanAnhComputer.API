@@ -1,4 +1,4 @@
-﻿@model LanAnhComputer.Web.Models.PayOSResponseViewModel
+@model LanAnhComputer.Web.Models.PayOSResponseViewModel
 
 @{
     ViewData["Title"] = "Thanh toán";
@@ -31,9 +31,9 @@
 
                 <!-- QR -->
                 <div class="flex justify-center">
-                    <img src="@Model.QrCode"
-                         class="w-72 h-72 border rounded-2xl p-3 bg-white" />
-                   
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=@Uri.EscapeDataString(Model.QrCode)"
+                         class="w-72 h-72 border rounded-2xl p-3 bg-white"
+                         alt="QR Code thanh toán" />
                 </div>
 
                 <div class="space-y-4">

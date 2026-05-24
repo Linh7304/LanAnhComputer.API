@@ -1,3 +1,4 @@
+using LanAnhComputer.Data.Entities;
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.Services;
 using LanAnhComputer.Web.ViewModels;
@@ -38,43 +39,60 @@ namespace LanAnhComputer.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PlaceOrder(
-            CheckoutViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
         {
+            Console.WriteLine("=== PLACE ORDER ===");
             var token = HttpContext.Session.GetString("JWT");
 
-            if (string.IsNullOrEmpty(token))
+            Console.WriteLine($"TOKEN: {token}");
+
+            Console.WriteLine($"ModelState valid: {ModelState.IsValid}");
+foreach (var item in ModelState)
             {
-                return Unauthorized();
+                Console.WriteLine($"KEY: {item.Key}");
+
+                foreach (var error in item.Value.Errors)
+                {
+                    Console.WriteLine($"ERROR: {error.ErrorMessage}");
+                }
             }
+            if (string.IsNullOrEmpty(token))
+                return Redirect("/");
 
-            var result = await _checkoutService
-                .PlaceOrderAsync(model, token);
-
-            if (result == null)
+            if (!ModelState.IsValid)
             {
-                model.CartItems =
-                    await _cartService.GetCartItemsAsync(token);
-
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Không thể đặt hàng"
-                );
-
+                model.CartItems = await _cartService.GetCartItemsAsync(token);
                 return View("Index", model);
             }
 
-            // COD
-            if (model.PaymentMethod == "COD")
+            var result = await _checkoutService.PlaceOrderAsync(model, token);
+
+            if (result == null)
             {
-                return RedirectToAction("Complete");
+                model.CartItems = await _cartService.GetCartItemsAsync(token);
+                ModelState.AddModelError("", "Không thể đặt hàng");
+                return View("Index", model);
             }
 
-            // BANKING / EWallet
-            return RedirectToAction("Payment", new
+            // =========================
+            // 1. COD
+            // =========================
+            if (model.PaymentMethod == "COD")
             {
-                orderId = result.OrderId
-            });
+                return RedirectToAction("Index","Orders");
+            }
+
+            // =========================
+            // 2. BANK / E-WALLET
+            // =========================
+            return RedirectToAction(
+              "Payment",
+              new
+              {
+                  orderId = result.OrderId
+              }
+          );
         }
 
         public async Task<IActionResult> Payment(long orderId)
@@ -86,29 +104,19 @@ namespace LanAnhComputer.Web.Controllers
                 return Redirect("/");
             }
 
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization =
-       new AuthenticationHeaderValue("Bearer", token);
+            var payment = await _checkoutService.CreatePaymentAsync(orderId, token);
 
-            var response = await client.PostAsync(
-                $"https://localhost:7132/api/payment/create/{orderId}",
-                null
-            );
-
-            if (!response.IsSuccessStatusCode)
+            if (payment == null)
             {
                 return RedirectToAction("Index");
             }
 
-            var payment =
-                await response.Content.ReadFromJsonAsync<PayOSResponseViewModel>();
-
             return View(payment);
-
         }
 
-        public IActionResult Complete()
+        public IActionResult Complete(long orderId)
         {
+            ViewBag.OrderId = orderId;
             return View();
         }
     }

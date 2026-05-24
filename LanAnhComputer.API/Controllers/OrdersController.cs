@@ -201,7 +201,6 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
         return NoContent();
     }
-
     [HttpPost("checkout")]
     [Authorize(Roles = "Customer")]
     public async Task<ActionResult<OrderDto>> Checkout([FromBody] CheckoutDtos dto)
@@ -210,15 +209,15 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
         if (!long.TryParse(userIdClaim, out var userId))
             return Unauthorized();
+        // Lấy Cart của user
 
-        // 1. Lấy cart theo user
         var cart = await dbContext.Carts
             .FirstOrDefaultAsync(x => x.UserId == userId);
 
         if (cart == null)
             return BadRequest("Cart not found");
 
-        // 2. Lấy cart items + product
+        // Lấy CartItem + Product để kiểm tra tồn kho và tính giá
         var cartItems = await dbContext.CartItems
             .Where(x => x.CartId == cart.CartId)
             .Include(x => x.Product)
@@ -230,11 +229,12 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         var stockCheck = await inventoryService.ValidateCartStockAsync(cart.CartId);
         if (!stockCheck.IsValid)
             return BadRequest(stockCheck.Error);
-
-        // 3. Tạo Order
+        //tạo order
         var order = new Order
         {
-            OrderCode = $"ORD-{DateTime.UtcNow.Ticks}",
+            // ❗ FIX: KHÔNG dùng string OrderCode nữa
+            // OrderCode nên = OrderId sau khi save
+
             UserId = userId,
             OrderDate = DateTime.UtcNow,
 
@@ -252,15 +252,10 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
             OrderDetails = new List<OrderDetail>()
         };
-
-        // 4. Convert Cart → OrderDetail (FIX QUAN TRỌNG)
+        // Convert CartItems to OrderDetails
         foreach (var item in cartItems)
         {
-            if (item.Product == null)
-                return BadRequest($"Product {item.ProductId} not found");
-
-            var unitPrice = item.Product.SalePrice; // ✅ FIX
-            var lineTotal = unitPrice * item.Quantity;
+            var unitPrice = item.Product.SalePrice;
 
             order.OrderDetails.Add(new OrderDetail
             {
@@ -268,29 +263,28 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
                 UnitPrice = unitPrice,
                 Quantity = item.Quantity,
                 DiscountPercent = 0,
-                LineTotal = lineTotal
+                LineTotal = unitPrice * item.Quantity
             });
         }
-
-        // 5. Tính tiền
+        // Tính tiền sau khi có OrderDetails
         order.SubTotal = order.OrderDetails.Sum(x => x.LineTotal);
         order.DiscountAmount = dto.DiscountAmount;
         order.ShippingFee = dto.ShippingFee;
         order.TotalAmount = order.SubTotal - order.DiscountAmount + order.ShippingFee;
 
-        // 6. Save Order
-        await inventoryService.DeductStockAsync(
-            cartItems.Select(x => (x.ProductId, x.Quantity))
-        );
+        // Save Order
+        await inventoryService.DeductStockAsync( cartItems.Select(x => (x.ProductId, x.Quantity)));
+
         foreach (var item in cartItems)
-        {
             item.Product.SoldQuantity += item.Quantity;
-        }
 
         dbContext.Orders.Add(order);
-
-        // 7. Xoá cart items sau khi checkout
         dbContext.CartItems.RemoveRange(cartItems);
+
+        await dbContext.SaveChangesAsync();
+
+        // ❗ FIX QUAN TRỌNG: set OrderCode = OrderId sau khi save
+        order.OrderCode = order.OrderId.ToString();
 
         await dbContext.SaveChangesAsync();
 
@@ -300,4 +294,5 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
             mapper.Map<OrderDto>(order)
         );
     }
+
 }
