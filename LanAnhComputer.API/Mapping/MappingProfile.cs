@@ -28,7 +28,9 @@ public class MappingProfile : Profile
         CreateMap<User, UserDto>();
         CreateMap<UserUpsertDto, User>();
 
-        CreateMap<OrderDetail, OrderDetailDto>();
+        CreateMap<OrderDetail, OrderDetailDto>()
+    .ForMember(dest => dest.ProductName,opt => opt.MapFrom(src => src.Product.ProductName))
+    .ForMember(dest => dest.ImageUrl,opt => opt.MapFrom(src => src.Product.ImageUrl));
 
         CreateMap<Order, OrderDto>();
 

@@ -43,6 +43,7 @@ public class AuthController(AppDbContext dbContext, IConfiguration configuration
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
     {
+       
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == dto.Email && x.IsActive);
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid email or password.");

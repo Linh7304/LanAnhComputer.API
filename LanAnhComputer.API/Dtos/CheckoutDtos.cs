@@ -10,8 +10,7 @@
         public string ShippingPhone { get; set; }
         public string ShippingAddressLine { get; set; }
         public string ShippingWard { get; set; }
-        public string ShippingDistrict { get; set; }
-        public string ShippingCity { get; set; }
-        public string Note { get; set; }
+        public string ShippingProvince { get; set; }
+        public string? Note { get; set; }
     }
 }

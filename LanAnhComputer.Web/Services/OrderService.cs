@@ -1,6 +1,5 @@
 using LanAnhComputer.Dtos;
 using LanAnhComputer.Web.Extensions;
-using System.Net.Http.Json;
 
 namespace LanAnhComputer.Web.Services
 {

@@ -86,8 +86,10 @@
                         <td class="px-4 py-4 text-sm font-medium text-slate-800 text-right">@product.SalePrice.ToString("N0")đ</td>
                         <td class="px-4 py-4 text-sm text-right @stockClass">@product.StockQuantity</td>
                         <td class="px-4 py-4">
-                            <span class="px-2.5 py-1 text-xs font-medium rounded-full @statusClass">@statusText</span>
+                            <!-- Thêm whitespace-nowrap để "Đang bán" luôn nằm trên 1 dòng -->
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap inline-block @statusClass">@statusText</span>
                         </td>
+
                         <td class="px-4 py-4 text-right">
                             <div class="flex items-center justify-end gap-1">
                                 <a href="/admin/san-pham/@product.ProductId/chi-tiet" class="p-2 hover:bg-slate-100 rounded-lg" title="Quan ly anh va thong so">

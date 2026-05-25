@@ -160,8 +160,8 @@ namespace LanAnhComputer.Data
                 entity.Property(x => x.ShippingPhone).HasMaxLength(20).IsUnicode(false).IsRequired();
                 entity.Property(x => x.ShippingAddressLine).HasMaxLength(255).IsRequired();
                 entity.Property(x => x.ShippingWard).HasMaxLength(100);
-                entity.Property(x => x.ShippingDistrict).HasMaxLength(100);
-                entity.Property(x => x.ShippingCity).HasMaxLength(100).IsRequired();
+                
+                entity.Property(x => x.ShippingProvince).HasMaxLength(100).IsRequired();
                 entity.Property(x => x.Note).HasMaxLength(500);
                 entity.Property(x => x.SubTotal).HasColumnType("decimal(18,2)").HasDefaultValue(0);
                 entity.Property(x => x.DiscountAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0);

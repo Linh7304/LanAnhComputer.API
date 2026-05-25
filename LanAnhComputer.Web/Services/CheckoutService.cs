@@ -2,24 +2,18 @@ using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Web.Extensions;
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.ViewModels;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace LanAnhComputer.Web.Services
 {
     public interface ICheckoutService
     {
-        Task<OrderResultViewModel?> PlaceOrderAsync(
-            CheckoutViewModel model,
-            string token
-        );
-        Task<PayOSResponseViewModel?> CreatePaymentAsync(
-            long orderId,
-            string token
-        );
-        Task<bool> CheckPaymentStatusAsync(
-            long orderId,
-            string token
-        );
+        Task<OrderResultViewModel?> PlaceOrderAsync(CheckoutViewModel model, string token);
+        Task<PayOSResponseViewModel?> CreatePaymentAsync( long orderId, string token );
+        Task<bool> CheckPaymentStatusAsync(long orderId,string token);
+        Task<bool> CancelOrderAsync(long orderId, string token); // Hủy đơn hàng
+        Task<List<OrderItemViewModel>> GetMyOrdersAsync(string token);
     }
 
     public class CheckoutService : ICheckoutService
@@ -41,7 +35,7 @@ namespace LanAnhComputer.Web.Services
                 ShippingFullName = model.FullName,
                 ShippingPhone = model.Phone,
                 ShippingAddressLine = model.Address,
-                ShippingCity = model.Province,
+                ShippingProvince = model.Province,
                 ShippingWard = model.Ward,
                 PaymentMethod = model.PaymentMethod,
                 Note = model.Note,
@@ -52,6 +46,10 @@ namespace LanAnhComputer.Web.Services
             var response = await _httpClient.PostAsJsonAsync("api/Orders/checkout", dto);
             // DEBUG RESPONSE BODY
             Console.WriteLine($"STATUS: {response.StatusCode}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine(content);
+
             if (!response.IsSuccessStatusCode)
             {
                 return null;
@@ -94,6 +92,29 @@ namespace LanAnhComputer.Web.Services
 
 
             return string.Equals(result?.PaymentStatus, "PAID", StringComparison.OrdinalIgnoreCase);
+        }
+        public async Task<List<OrderItemViewModel>> GetMyOrdersAsync(string token)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var result = await _httpClient
+                .GetFromJsonAsync<List<OrderItemViewModel>>("api/orders/my");
+
+            return result ?? new List<OrderItemViewModel>();
+        }
+        public async Task<bool> CancelOrderAsync(long orderId, string token)
+        {
+            _httpClient.AddJwt(token);
+
+            var response = await _httpClient.PatchAsJsonAsync(
+                $"api/orders/{orderId}/status",
+                new
+                {
+                    orderStatus = "Cancelled"
+                });
+
+            return response.IsSuccessStatusCode;
         }
     }
 

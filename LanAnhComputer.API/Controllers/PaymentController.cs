@@ -78,9 +78,21 @@ public class PaymentController : ControllerBase
 
         return Ok(new
         {
-            order.OrderId,
-            paymentLink.CheckoutUrl,
-            paymentLink.QrCode
+            orderId = order.OrderId,
+
+            checkoutUrl = paymentLink.CheckoutUrl,
+
+            qrCode = paymentLink.QrCode,
+
+            bin = paymentLink.Bin,
+
+            accountNumber = paymentLink.AccountNumber,
+
+            accountName = paymentLink.AccountName,
+
+            description = paymentLink.Description,
+
+            amount = paymentLink.Amount
         });
     }
 
@@ -96,36 +108,58 @@ public class PaymentController : ControllerBase
 
             // 2. Tìm order
             var order = await _dbContext.Orders
-                .FirstOrDefaultAsync(x => x.PayOSOrderCode == orderCode);
+     .Include(x => x.OrderDetails)
+     .FirstOrDefaultAsync(x => x.PayOSOrderCode == orderCode);
 
             // ❗ KHÔNG return NotFound trong webhook
             if (order == null)
             {
-                Console.WriteLine($"Order not found: {orderCode}");
                 return Ok();
             }
 
             // 3. CHỐNG xử lý lại nhiều lần (idempotent)
-            if (order.PaymentStatus == "PAID")
+            if (order.PaymentStatus == "Paid")
             {
                 return Ok();
             }
 
             // 4. Update trạng thái
-            order.PaymentStatus = "PAID";
-            order.OrderStatus = "CONFIRMED";
+            order.PaymentStatus = "Paid";
+            order.OrderStatus = "Shipped";
             order.PaidAt = DateTime.UtcNow;
             order.TransactionId = data.Reference;
+
+            foreach (var detail in order.OrderDetails)
+            {
+                var product = await _dbContext.Products
+                    .FirstOrDefaultAsync(x => x.ProductId == detail.ProductId);
+
+                if (product != null)
+                {
+                    product.SoldQuantity += detail.Quantity;
+                }
+            }
+            // 3. Remove cart items
+            // =========================
+
+            var cart = await _dbContext.Carts
+                .FirstOrDefaultAsync(x => x.UserId == order.UserId);
+
+            if (cart != null)
+            {
+                var cartItems = await _dbContext.CartItems
+                    .Where(x => x.CartId == cart.CartId)
+                    .ToListAsync();
+
+                _dbContext.CartItems.RemoveRange(cartItems);
+            }
 
             await _dbContext.SaveChangesAsync();
 
             return Ok();
         }
         catch (Exception ex)
-        {
-            // ❗ Quan trọng: webhook KHÔNG được fail
-            Console.WriteLine("WEBHOOK ERROR: " + ex.Message);
-
+        {          
             return Ok(); // luôn trả 200 để PayOS không retry lỗi
         }
     }

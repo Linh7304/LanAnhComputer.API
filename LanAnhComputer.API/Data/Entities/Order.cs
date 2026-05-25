@@ -8,14 +8,13 @@
         public DateTime OrderDate { get; set; }
         public string OrderStatus { get; set; } = "Pending";
         public string PaymentMethod { get; set; } = "COD";
-        public string PaymentStatus { get; set; } = "Unpaid";
+        public string PaymentStatus { get; set; } = "Pending";
 
         public string ShippingFullName { get; set; } = null!;
         public string ShippingPhone { get; set; } = null!;
         public string ShippingAddressLine { get; set; } = null!;
         public string? ShippingWard { get; set; }
-        public string? ShippingDistrict { get; set; }
-        public string ShippingCity { get; set; } = null!;
+        public string ShippingProvince { get; set; } = null!;
         public string? Note { get; set; }
 
         public decimal SubTotal { get; set; }

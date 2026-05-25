@@ -77,9 +77,8 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
             ShippingFullName = dto.ShippingFullName,
             ShippingPhone = dto.ShippingPhone,
             ShippingAddressLine = dto.ShippingAddressLine,
-            ShippingWard = dto.ShippingWard,
-            ShippingDistrict = dto.ShippingDistrict,
-            ShippingCity = dto.ShippingCity,
+            ShippingWard = dto.ShippingWard,   
+            ShippingProvince = dto.ShippingProvince,
             Note = dto.Note
         };
 
@@ -141,8 +140,7 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         order.ShippingPhone = dto.ShippingPhone;
         order.ShippingAddressLine = dto.ShippingAddressLine;
         order.ShippingWard = dto.ShippingWard;
-        order.ShippingDistrict = dto.ShippingDistrict;
-        order.ShippingCity = dto.ShippingCity;
+        order.ShippingProvince = dto.ShippingProvince;
         order.Note = dto.Note;
         order.UpdatedAt = DateTime.UtcNow;
 
@@ -179,10 +177,10 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
     }
 
     [HttpPatch("{id:long}/status")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var allowedStatuses = new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+        var allowedStatuses = new[] { "Pending","Shipped", "Delivered", "Cancelled" };
         if (!allowedStatuses.Contains(dto.OrderStatus))
         {
             return BadRequest("Invalid order status.");
@@ -195,6 +193,14 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         }
 
         order.OrderStatus = dto.OrderStatus;
+        // COD giao thành công => đã thanh toán
+        if (
+            order.PaymentMethod == "COD" &&
+            dto.OrderStatus == "Delivered"
+        )
+        {
+            order.PaymentStatus = "Paid";
+        }
         order.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
@@ -240,14 +246,13 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
             OrderStatus = "Pending",
             PaymentMethod = dto.PaymentMethod,
-            PaymentStatus = "Unpaid",
+            PaymentStatus = "Pending",
 
             ShippingFullName = dto.ShippingFullName,
             ShippingPhone = dto.ShippingPhone,
             ShippingAddressLine = dto.ShippingAddressLine,
-            ShippingWard = dto.ShippingWard,
-            ShippingDistrict = dto.ShippingDistrict,
-            ShippingCity = dto.ShippingCity,
+            ShippingWard = dto.ShippingWard,    
+            ShippingProvince = dto.ShippingProvince,
             Note = dto.Note,
 
             OrderDetails = new List<OrderDetail>()
@@ -275,17 +280,26 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         // Save Order
         await inventoryService.DeductStockAsync( cartItems.Select(x => (x.ProductId, x.Quantity)));
 
-        foreach (var item in cartItems)
-            item.Product.SoldQuantity += item.Quantity;
+   
 
         dbContext.Orders.Add(order);
-        dbContext.CartItems.RemoveRange(cartItems);
+      
 
         await dbContext.SaveChangesAsync();
 
         // ❗ FIX QUAN TRỌNG: set OrderCode = OrderId sau khi save
         order.OrderCode = order.OrderId.ToString();
+        if (dto.PaymentMethod == "COD")
+        {
+            // tăng sold quantity
+            foreach (var item in cartItems)
+            {
+                item.Product.SoldQuantity += item.Quantity;
+            }
 
+            // xoá cart
+            dbContext.CartItems.RemoveRange(cartItems);
+        }
         await dbContext.SaveChangesAsync();
 
         return CreatedAtAction(
@@ -293,6 +307,50 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
             new { id = order.OrderId },
             mapper.Map<OrderDto>(order)
         );
+    }
+    [HttpPost("cancel-expired")]
+    public async Task<IActionResult> CancelExpiredOrders()
+    {
+        var expiredOrders = await dbContext.Orders
+            .Include(x => x.OrderDetails)
+            .Where(x =>
+                x.PaymentStatus == "Pending" &&
+                x.OrderDate < DateTime.UtcNow.AddMinutes(-15))
+            .ToListAsync();
+
+        foreach (var order in expiredOrders)
+        {
+            order.PaymentStatus = "Cancelled";
+            order.OrderStatus = "Cancelled";
+
+            // hoàn kho
+            foreach (var detail in order.OrderDetails)
+            {
+                var product = await dbContext.Products
+                    .FirstOrDefaultAsync(x => x.ProductId == detail.ProductId);
+
+                if (product != null)
+                {
+                    product.StockQuantity += detail.Quantity;
+                }
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        return Ok();
+    }
+    [HttpGet("my")]
+    [Authorize(Roles = "Customer")]
+    public async Task<ActionResult<IEnumerable<OrderDto>>> MyOrders()  // lấy đơn hàng của user
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!long.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var orders = await dbContext.Orders.Include(x => x.OrderDetails).ThenInclude(x => x.Product).Where(x => x.UserId == userId).OrderByDescending(x => x.OrderDate).ToListAsync();
+        return Ok(mapper.Map<List<OrderDto>>(orders));
     }
 
 }

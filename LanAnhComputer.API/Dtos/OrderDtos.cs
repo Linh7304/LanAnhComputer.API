@@ -2,7 +2,7 @@
 
 namespace LanAnhComputer.Dtos;
 
-public class OrderDetailDto
+public class OrderDetailDto  // chi tiết đơn hàng
 {
     public long OrderDetailId { get; set; }
     public long ProductId { get; set; }
@@ -10,9 +10,12 @@ public class OrderDetailDto
     public int Quantity { get; set; }
     public decimal DiscountPercent { get; set; }
     public decimal LineTotal { get; set; }
+    public string ProductName { get; set; } = "";
+    public string? ImageUrl { get; set; }
+
 }
 
-public class OrderDetailUpsertDto
+public class OrderDetailUpsertDto // chi tiết đơn hàng khi tạo hoặc cập nhật
 {
     [Range(1, long.MaxValue)]
     public long ProductId { get; set; }
@@ -37,8 +40,7 @@ public class OrderDto
     public string ShippingPhone { get; set; } = null!;
     public string ShippingAddressLine { get; set; } = null!;
     public string? ShippingWard { get; set; }
-    public string? ShippingDistrict { get; set; }
-    public string ShippingCity { get; set; } = null!;
+    public string ShippingProvince { get; set; } = null!;
     public string? Note { get; set; }
     public decimal SubTotal { get; set; }
     public decimal DiscountAmount { get; set; }
@@ -50,7 +52,7 @@ public class OrderDto
 
 }
 
-public class OrderUpsertDto
+public class OrderUpsertDto // dữ liệu để tạo hoặc cập nhật đơn hàng
 {
     [Required]
     [MaxLength(30)]
@@ -73,10 +75,9 @@ public class OrderUpsertDto
     [MaxLength(255)]
     public string ShippingAddressLine { get; set; } = null!;
     public string? ShippingWard { get; set; }
-    public string? ShippingDistrict { get; set; }
     [Required]
     [MaxLength(100)]
-    public string ShippingCity { get; set; } = null!;
+    public string ShippingProvince { get; set; } = null!;
     public string? Note { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal ShippingFee { get; set; }

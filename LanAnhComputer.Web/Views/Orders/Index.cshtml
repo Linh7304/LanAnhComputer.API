@@ -1,5 +1,212 @@
-@{
-    ViewData["Title"] = "Đơn hàng của bạn";
+@model List<LanAnhComputer.Web.Models.OrderItemViewModel>
+
+<div class="container mx-auto px-4 py-8">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+        <a href="/" class="hover:text-primary-600">
+            Trang chủ
+        </a>
+
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+
+        <span class="text-slate-800 font-medium">
+            Đơn hàng của tôi
+        </span>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800">
+            Đơn hàng của tôi
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+            Theo dõi trạng thái đơn hàng và lịch sử mua sắm
+        </p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-3 mb-6 flex-wrap">
+
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border">  Tất cả </a>
+
+        <a asp-action="Index" asp-route-status="Pending" class="px-4 py-2 rounded-xl border">  Chờ xác nhận  </a>
+
+        <a asp-action="Index"   asp-route-status="Shipped" class="px-4 py-2 rounded-xl border"> Đang giao  </a>
+
+        <a asp-action="Index" asp-route-status="Delivered" class="px-4 py-2 rounded-xl border">  Hoàn thành  </a>
+
+        <a asp-action="Index"  asp-route-status="Cancelled"  class="px-4 py-2 rounded-xl border">  Đã hủy  </a>
+
+    </div>
+
+    <!-- ORDER LIST -->
+    <div class="space-y-6">
+
+        @if (!Model.Any())
+        {
+            <div class="bg-white rounded-2xl border p-10 text-center">
+                <p class="text-slate-500">
+                    Bạn chưa có đơn hàng nào
+                </p>
+            </div>
+        }
+
+        @foreach (var order in Model)
+        {
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <!-- TOP -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-5 border-b border-slate-100 bg-slate-50">
+                    <div>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            
+
+                            @if (order.OrderStatus == "Pending")
+                            {
+                                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium">
+                                    Chờ xác nhận
+                                </span>
+                            }
+
+                            @if (order.OrderStatus == "Shipped")
+                            {
+                                <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                                    Đang giao
+                                </span>
+                            }
+
+                            @if (order.OrderStatus == "Delivered")
+                            {
+                                <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium">
+                                    Hoàn thành
+                                </span>
+                            }
+
+                            @if (order.OrderStatus == "Cancelled")
+                            {
+                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                                    Đã hủy
+                                </span>
+                            }
+
+                        </div>
+
+                        <p class="text-sm text-slate-500 mt-1">
+                            Đặt ngày:
+                            @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+
+                    </div>
+
+                    <div class="text-right">
+
+                        <p class="text-sm text-slate-500">
+                            Tổng thanh toán
+                        </p>
+
+                        <p class="text-2xl font-bold text-red-600">
+                            @order.TotalAmount.ToString("N0")đ
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- PRODUCTS -->
+                <div class="p-6 space-y-5">
+
+                    @foreach (var item in order.Items)
+                    {
+                        <div class="flex gap-4">
+
+                            <img src="@item.ImageUrl"
+                                 class="w-24 h-24 rounded-xl object-cover border border-slate-200" />
+
+                            <div class="flex-1 min-w-0">
+
+                                <h3 class="font-semibold text-slate-800 line-clamp-2">
+                                    @item.ProductName
+                                </h3>
+
+                                <div class="flex items-center justify-between mt-4">
+
+                                    <span class="text-sm text-slate-500">
+                                        Số lượng: x @item.Quantity
+                                    </span>
+
+                                    <span class="font-semibold text-slate-800">
+                                        @item.Price.ToString("N0")đ
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="px-6 py-5 border-t border-slate-100 flex flex-col md:flex-row gap-3 justify-between items-center">
+
+                    <div>
+
+                        <p class="text-sm text-slate-500">
+                            Thanh toán:
+                            @(order.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng" : "Chuyển khoản")
+                        </p>
+
+                        <p class="text-sm text-slate-500">
+                            Trạng thái thanh toán:
+                            @if (order.PaymentStatus == "Pending")
+                            {
+                                <span class="text-yellow-600">Chờ thanh toán</span>
+                            }
+                            @if (order.PaymentStatus == "Paid")
+                            {
+                                <span class="text-green-600">Đã thanh toán</span>
+                            }
+                            @if (order.PaymentStatus == "Cancelled")
+                            {
+                                <span class="text-red-600">Đã huỷ</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="flex gap-3">
+
+                        <a asp-action="Details"
+                           asp-route-id="@order.OrderId"
+                           class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 transition">
+
+                            Xem chi tiết
+
+                        </a>
+
+                        @if (order.OrderStatus == "Pending")
+                        {
+                            <form asp-action="CancelOrder" method="post">
+                              <input type="hidden" name="orderId" value="@order.OrderId" />
+                                <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition">
+                                    Hủy đơn
+                                </button>
+                            </form>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
 }
-<h2 class="text-2xl font-semibold text-slate-800 mb-4">Đơn hàng của bạn</h2>
-<p class="text-slate-600">Đây là trang danh sách đơn hàng (placeholder). Bạn có thể hiển thị danh sách đơn hàng ở đây.</p>

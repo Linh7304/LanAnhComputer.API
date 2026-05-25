@@ -17,18 +17,16 @@ namespace LanAnhComputer.Web.Models
         [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ")]
         public string Email { get; set; } = "";
 
-        public string Province { get; set; } = "";
+        public string? Province { get; set; }
 
-
-        public string Ward { get; set; } = "";
-
+        public string? Ward { get; set; }
         [Required(ErrorMessage = "Vui lòng nhập địa chỉ cụ thể")]
         [StringLength(255, ErrorMessage = "Địa chỉ không được quá 255 ký tự")]
         public string Address { get; set; } = "";
 
         public string PaymentMethod { get; set; } = "COD";
 
-        public string Note { get; set; } = "";
+        public string? Note { get; set; }
 
         public List<CartItemViewModel> CartItems { get; set; } = new();
         public decimal SubTotal => CartItems.Sum(x => x.TotalPrice);

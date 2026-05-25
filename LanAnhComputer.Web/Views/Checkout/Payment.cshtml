@@ -6,76 +6,218 @@
 
 <div class="container mx-auto px-4 py-10">
 
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-5xl mx-auto">
 
-        <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
-            <div class="text-center mb-8">
+            <!-- Header -->
+            <div class="px-8 py-5 border-b bg-slate-50 flex items-center gap-3">
 
-                <div class="w-20 h-20 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                    <i data-lucide="qr-code"
-                       class="w-10 h-10 text-blue-600"></i>
+                <div class="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center">
+
+                    <i data-lucide="lightbulb"
+                       class="w-5 h-5 text-slate-700"></i>
+
                 </div>
 
-                <h1 class="text-3xl font-bold text-slate-800 mb-2">
-                    Thanh toán đơn hàng
-                </h1>
+                <p class="text-slate-700 text-sm">
 
-                <p class="text-slate-500">
-                    Vui lòng quét mã QR để hoàn tất thanh toán
+                    Mở App ngân hàng để
+
+                    <span class="font-semibold text-black">
+                        quét mã QR
+                    </span>
+
+                    hoặc chuyển khoản đúng số tiền bên dưới
+
                 </p>
 
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
+            <!-- Content -->
+            <div class="grid md:grid-cols-2">
 
-                <!-- QR -->
-                <div class="flex justify-center">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=@Uri.EscapeDataString(Model.QrCode)"
-                         class="w-72 h-72 border rounded-2xl p-3 bg-white"
-                         alt="QR Code thanh toán" />
-                </div>
+                <!-- LEFT -->
+                <div class="p-8 border-r border-slate-200 flex flex-col items-center justify-center">
 
-                <div class="space-y-4">
+                    <!-- VietQR -->
+                    <div class="mb-4">
 
-                    <div class="p-4 rounded-xl bg-slate-50 border">
+                        <div class="flex items-center gap-1">
 
-                        <p class="text-sm text-slate-500 mb-1">
-                            Mã thanh toán
-                        </p>
+                            <span class="text-3xl font-black text-red-500">
+                                VIET
+                            </span>
 
-                        <p class="font-semibold text-lg">
-                            @Model.OrderCode
-                        </p>
+                            <span class="text-3xl font-black text-green-500">
+                                QR
+                            </span>
 
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-red-50 border border-red-100">
-
-                        <p class="text-sm text-slate-500 mb-1">
-                            Số tiền
-                        </p>
-
-                        <p class="font-bold text-2xl text-red-600">
-                            @Model.Amount.ToString("N0")đ
-                        </p>
+                        </div>
 
                     </div>
 
+                    <!-- QR -->
+                    <div class="bg-white border-2 border-slate-300 rounded-xl p-3 shadow-sm">
+
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=@Uri.EscapeDataString(Model.QrCode)"
+                             class="w-64 h-64 object-cover"
+                             alt="QR Code thanh toán" />
+
+                    </div>
+
+                    <!-- Bottom -->
+                    <div class="mt-4 flex items-center gap-3 text-sm text-slate-500">
+
+                        <span class="italic font-semibold">
+                            napas247
+                        </span>
+
+                        <div class="w-px h-4 bg-slate-300"></div>
+
+                        <span class="font-bold text-pink-600">
+                            MB
+                        </span>
+
+                    </div>
+
+                    <!-- PayOS -->
                     <a href="@Model.CheckoutUrl"
                        target="_blank"
-                       class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition">
+                       class="mt-7 text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline">
 
-                        Mở trang thanh toán PayOS
+                        QR lỗi? Mở trang thanh toán PayOS
 
                     </a>
 
                 </div>
 
-            </div>
+                <!-- RIGHT -->
+                <div class="p-8 flex flex-col justify-center">
 
-            <div class="mt-8 text-center text-sm text-slate-500">
-                Hệ thống sẽ tự động xác nhận sau khi thanh toán thành công
+                    <!-- Bank -->
+                    <div class="flex items-center gap-3 mb-7">
+
+                        <div class="w-11 h-11 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-sm">
+                            MB
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-sm mb-0">
+                                Ngân hàng
+                            </p>
+                            <p class="font-semibold text-lg text-slate-800 leading-5">
+                                MB Bank
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- Info -->
+                    <div class="space-y-5">
+
+                        <!-- Chủ TK -->
+                        <div>
+
+                            <p class="text-sm text-slate-500 mb-1">
+                                Chủ tài khoản
+                            </p>
+
+                            <div class="flex items-center justify-between gap-4">
+                                <p class="font-semibold text-lg uppercase text-black leading-none">
+                                    @Model.AccountName
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- STK -->
+                        <div>
+
+                            <p class="text-sm text-slate-500 mb-1">
+                                Số tài khoản
+                            </p>
+                            <div class="flex items-center justify-between gap-4">
+
+                                <p id="accountNumber"
+                                   class="font-semibold text-lg text-black tracking-wide leading-none">
+                                    @Model.AccountNumber
+                                </p>
+
+                                <button onclick="copyText('accountNumber', this)"  class="bg-slate-100 hover:bg-slate-200 transition px-4 py-2 rounded-lg text-sm font-medium text-slate-700">
+                                    Sao chép
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Amount -->
+                        <div>
+
+                            <p class="text-sm text-slate-500 mb-1">
+                                Số tiền
+                            </p>
+
+                            <div class="flex items-center justify-between gap-4">
+
+                                <p id="amount"
+                                   class="font-bold text-xl text-red-600 leading-none">
+                                    @Model.Amount.ToString("N0")đ
+                                </p>
+
+                                <button onclick="copyText('amount', this)"
+                                        class="bg-slate-100 hover:bg-slate-200 transition px-4 py-2 rounded-lg text-sm font-medium text-slate-700">
+                                    Sao chép
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+
+                            <p class="text-sm text-slate-500 mb-1">
+                                Nội dung chuyển khoản
+                            </p>
+
+                            <div class="flex items-center justify-between gap-4">
+                                <p id="description"
+                                   class="font-semibold text-lg text-blue-600 leading-none">
+                                    @Model.Description
+                                </p>
+                                <button onclick="copyText('description', this)"
+                                        class="bg-slate-100 hover:bg-slate-200 transition px-4 py-2 rounded-lg text-sm font-medium text-slate-700">
+                                    Sao chép
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Note -->
+                    <div class="mt-8 p-4 rounded-xl bg-yellow-50 border border-yellow-200">
+
+                        <p class="text-sm text-slate-700 leading-6">
+
+                            <span class="font-semibold">
+                                Lưu ý:
+                            </span>
+                            Vui lòng chuyển đúng số tiền
+                            <span class="font-bold text-black">
+                                @Model.Amount.ToString("N0")đ
+                            </span>
+
+                            để hệ thống tự động xác nhận thanh toán.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
@@ -85,6 +227,40 @@
 </div>
 
 <script>
+
+    async function copyText(elementId, button) {
+
+        try {
+
+            const text = document.getElementById(elementId).innerText.trim();
+
+            await navigator.clipboard.writeText(text);
+
+            const originalText = button.innerText;
+
+            button.innerText = "Đã sao chép";
+
+            button.classList.remove("bg-slate-100");
+            button.classList.add("bg-green-100", "text-green-700");
+
+            setTimeout(() => {
+
+                button.innerText = originalText;
+
+                button.classList.remove("bg-green-100", "text-green-700");
+                button.classList.add("bg-slate-100");
+
+            }, 1500);
+
+        }
+        catch {
+
+            alert("Không thể sao chép");
+
+        }
+
+    }
+
     setInterval(async () => {
 
         const response = await fetch('/Orders/CheckPaymentStatus?orderId=@Model.OrderId');
@@ -92,8 +268,11 @@
         const result = await response.json();
 
         if (result.success) {
+
             window.location.href = '/Checkout/Complete';
+
         }
 
     }, 3000);
+
 </script>

@@ -12,27 +12,53 @@ namespace LanAnhComputer.Web.Controllers
             _checkoutService = checkoutService;
         }
 
-        // Existing action
         [HttpGet]
         public async Task<IActionResult> CheckPaymentStatus(long orderId)
         {
             var token = HttpContext.Session.GetString("JWT") ?? "";
-            var isPaid = await _checkoutService.CheckPaymentStatusAsync(orderId, token);
-            return Json(new { success = isPaid });
+
+            var isPaid = await _checkoutService
+                .CheckPaymentStatusAsync(orderId, token);
+
+            return Json(new
+            {
+                success = isPaid
+            });
         }
 
-        // New Index action for order overview after COD
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? status)
         {
-            // TODO: fetch user's orders and pass to view
-            // For now display a simple confirmation page.
-            return View();
+            var token = HttpContext.Session.GetString("JWT");
+
+            if (string.IsNullOrEmpty(token))
+                return Redirect("/");
+
+            var orders = await _checkoutService.GetMyOrdersAsync(token);
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                orders = orders
+                    .Where(x => x.OrderStatus == status)
+                    .ToList();
+            }
+
+            return View(orders);
         }
-    
-    [HttpGet]
-    public IActionResult Index()
-    {
-        // Placeholder: In production, fetch user's orders here.
-        return View();
+        [HttpPost]
+        public async Task<IActionResult> CancelOrder(long orderId) //  Huỷ dơn hàng
+        {
+            var token = HttpContext.Session.GetString("JWT");
+
+            if (string.IsNullOrEmpty(token))
+                return Redirect("/");
+
+            var success = await _checkoutService.CancelOrderAsync(orderId, token);
+
+            if (!success)
+                TempData["Error"] = "Hủy đơn thất bại";
+
+            return RedirectToAction("Index");
+        }
     }
+}
