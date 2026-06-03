@@ -6,6 +6,7 @@
     Layout = "_AdminLayout";
     var products = Model?.Items ?? new List<LanAnhComputer.Web.ViewModels.ProductViewModel>();
     var search = ViewBag.Search as string;
+    var categories = ViewBag.Categories as List<LanAnhComputer.Dtos.CategoryDto> ?? new List<LanAnhComputer.Dtos.CategoryDto>();
 }
 
 @if (TempData["Success"] != null)
@@ -164,18 +165,13 @@
                     <input id="ProductName" name="ProductName" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">CategoryId *</label>
-                    <input id="CategoryId" name="CategoryId" type="number" min="1" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Loại sản phẩm *</label>
-                    <select id="ProductType"name="ProductType" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
-
-                        <option value="">-- Chọn loại sản phẩm --</option>
-
-                        <option value="Computer">Máy tính</option>
-
-                        <option value="Component">Linh kiện</option>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Danh mục *</label>
+                    <select id="CategoryId" name="CategoryId" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white">
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var category in categories.Where(x => x.IsActive))
+                        {
+                            <option value="@category.CategoryId">@category.CategoryName</option>
+                        }
                     </select>
                 </div>
                 <div>
@@ -267,7 +263,6 @@
             setValue('CategoryId', data.categoryId);
             setValue('ProductCode', data.productCode);
             setValue('ProductName', data.productName);
-            setValue('ProductType', data.productType);
             setValue('Brand', data.brand);
             setValue('Model', data.model);
             setValue('ShortDescription', data.shortDescription);

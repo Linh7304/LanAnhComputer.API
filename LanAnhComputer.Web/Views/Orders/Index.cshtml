@@ -1,4 +1,5 @@
 @model List<LanAnhComputer.Web.Models.OrderItemViewModel>
+@using LanAnhComputer.Constants
 
 <div class="container mx-auto px-4 py-8">
 
@@ -31,13 +32,13 @@
 
         <a asp-action="Index" class="px-4 py-2 rounded-xl border">  Tất cả </a>
 
-        <a asp-action="Index" asp-route-status="Pending" class="px-4 py-2 rounded-xl border">  Chờ xác nhận  </a>
+        <a asp-action="Index" asp-route-status="@OrderStatuses.Pending" class="px-4 py-2 rounded-xl border">  Chờ xác nhận  </a>
 
-        <a asp-action="Index"   asp-route-status="Shipped" class="px-4 py-2 rounded-xl border"> Đang giao  </a>
+        <a asp-action="Index" asp-route-status="@OrderStatuses.Shipped" class="px-4 py-2 rounded-xl border"> Đang giao  </a>
 
-        <a asp-action="Index" asp-route-status="Delivered" class="px-4 py-2 rounded-xl border">  Hoàn thành  </a>
+        <a asp-action="Index" asp-route-status="@OrderStatuses.Delivered" class="px-4 py-2 rounded-xl border">  Hoàn thành  </a>
 
-        <a asp-action="Index"  asp-route-status="Cancelled"  class="px-4 py-2 rounded-xl border">  Đã hủy  </a>
+        <a asp-action="Index" asp-route-status="@OrderStatuses.Cancelled" class="px-4 py-2 rounded-xl border">  Đã hủy  </a>
 
     </div>
 
@@ -62,28 +63,28 @@
                         <div class="flex items-center gap-3 flex-wrap">
                             
 
-                            @if (order.OrderStatus == "Pending")
+                            @if (string.Equals(order.OrderStatus, OrderStatuses.Pending, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium">
                                     Chờ xác nhận
                                 </span>
                             }
 
-                            @if (order.OrderStatus == "Shipped")
+                            @if (string.Equals(order.OrderStatus, OrderStatuses.Shipped, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                                     Đang giao
                                 </span>
                             }
 
-                            @if (order.OrderStatus == "Delivered")
+                            @if (string.Equals(order.OrderStatus, OrderStatuses.Delivered, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium">
                                     Hoàn thành
                                 </span>
                             }
 
-                            @if (order.OrderStatus == "Cancelled")
+                            @if (string.Equals(order.OrderStatus, OrderStatuses.Cancelled, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
                                     Đã hủy
@@ -155,20 +156,20 @@
 
                         <p class="text-sm text-slate-500">
                             Thanh toán:
-                            @(order.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng" : "Chuyển khoản")
+                            @(string.Equals(order.PaymentMethod, "COD", StringComparison.OrdinalIgnoreCase) ? "Thanh toán khi nhận hàng" : "Chuyển khoản")
                         </p>
 
                         <p class="text-sm text-slate-500">
                             Trạng thái thanh toán:
-                            @if (order.PaymentStatus == "Pending")
+                            @if (string.Equals(order.PaymentStatus, PaymentStatuses.Pending, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="text-yellow-600">Chờ thanh toán</span>
                             }
-                            @if (order.PaymentStatus == "Paid")
+                            @if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="text-green-600">Đã thanh toán</span>
                             }
-                            @if (order.PaymentStatus == "Cancelled")
+                            @if (string.Equals(order.PaymentStatus, PaymentStatuses.Cancelled, StringComparison.OrdinalIgnoreCase))
                             {
                                 <span class="text-red-600">Đã huỷ</span>
                             }
@@ -184,7 +185,7 @@
 
                         </a>
 
-                        @if (order.OrderStatus == "Pending")
+                        @if (string.Equals(order.OrderStatus, OrderStatuses.Pending, StringComparison.OrdinalIgnoreCase))
                         {
                             <form asp-action="CancelOrder" method="post">
                               <input type="hidden" name="orderId" value="@order.OrderId" />

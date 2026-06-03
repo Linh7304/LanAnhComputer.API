@@ -18,7 +18,7 @@ public class ReportsController(AppDbContext dbContext) : ControllerBase
         var toDate = to?.Date ?? DateTime.UtcNow.Date;
 
         var data = await dbContext.Orders
-            .Where(x => x.OrderDate.Date >= fromDate && x.OrderDate.Date <= toDate && x.OrderStatus != "Cancelled")
+            .Where(x => x.OrderDate.Date >= fromDate && x.OrderDate.Date <= toDate && x.OrderStatus != LanAnhComputer.Constants.OrderStatuses.Cancelled)
             .GroupBy(x => x.OrderDate.Date)
             .Select(g => new RevenueByDateDto
             {
@@ -37,7 +37,7 @@ public class ReportsController(AppDbContext dbContext) : ControllerBase
     {
         var selectedYear = year == 0 ? DateTime.UtcNow.Year : year;
         var data = await dbContext.Orders
-            .Where(x => x.OrderDate.Year == selectedYear && x.OrderStatus != "Cancelled")
+            .Where(x => x.OrderDate.Year == selectedYear && x.OrderStatus != LanAnhComputer.Constants.OrderStatuses.Cancelled)
             .GroupBy(x => x.OrderDate.Month)
             .Select(g => new
             {

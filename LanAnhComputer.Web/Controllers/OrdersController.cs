@@ -1,4 +1,5 @@
 using LanAnhComputer.Web.Services;
+using LanAnhComputer.Constants;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LanAnhComputer.Web.Controllers
@@ -39,7 +40,7 @@ namespace LanAnhComputer.Web.Controllers
             if (!string.IsNullOrEmpty(status))
             {
                 orders = orders
-                    .Where(x => x.OrderStatus == status)
+                    .Where(x => string.Equals(x.OrderStatus, status, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 

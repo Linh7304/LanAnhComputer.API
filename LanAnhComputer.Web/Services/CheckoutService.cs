@@ -1,4 +1,5 @@
 using LanAnhComputer.API.Dtos;
+using LanAnhComputer.Constants;
 using LanAnhComputer.Web.Extensions;
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.ViewModels;
@@ -91,7 +92,7 @@ namespace LanAnhComputer.Web.Services
             var result = await response.Content.ReadFromJsonAsync<PaymentStatusResponse>();
 
 
-            return string.Equals(result?.PaymentStatus, "PAID", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(result?.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase);
         }
         public async Task<List<OrderItemViewModel>> GetMyOrdersAsync(string token)
         {
@@ -111,7 +112,7 @@ namespace LanAnhComputer.Web.Services
                 $"api/orders/{orderId}/status",
                 new
                 {
-                    orderStatus = "Cancelled"
+                    orderStatus = OrderStatuses.Cancelled
                 });
 
             return response.IsSuccessStatusCode;

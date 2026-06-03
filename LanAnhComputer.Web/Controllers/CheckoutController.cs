@@ -78,7 +78,7 @@ foreach (var item in ModelState)
             // =========================
             // 1. COD
             // =========================
-            if (model.PaymentMethod == "COD")
+            if (string.Equals(model.PaymentMethod, "COD", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Index","Orders");
             }

@@ -43,6 +43,11 @@ builder.Services.AddHttpClient<IUserService, UserService>(client =>
     client.BaseAddress = new Uri("https://localhost:7132/");
 });
 
+builder.Services.AddHttpClient<ICategoryService, CategoryService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
 // Session
 builder.Services.AddDistributedMemoryCache();
 

@@ -2,6 +2,7 @@
 using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data;
 using LanAnhComputer.Data.Entities;
+using LanAnhComputer.Constants;
 using LanAnhComputer.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,15 +66,19 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         if (!userExists) return BadRequest("User does not exist.");
 
         if (dto.Details.Count == 0) return BadRequest("Order must have at least 1 detail.");
+        var normalizedOrderStatus = NormalizeOrderStatus(dto.OrderStatus);
+        if (normalizedOrderStatus == null) return BadRequest("Invalid order status.");
+        var normalizedPaymentStatus = NormalizePaymentStatus(dto.PaymentStatus);
+        if (normalizedPaymentStatus == null) return BadRequest("Invalid payment status.");
 
         var order = new Order
         {
             OrderCode = dto.OrderCode,
             UserId = dto.UserId,
             OrderDate = DateTime.UtcNow,
-            OrderStatus = dto.OrderStatus,
+            OrderStatus = normalizedOrderStatus,
             PaymentMethod = dto.PaymentMethod,
-            PaymentStatus = dto.PaymentStatus,
+            PaymentStatus = normalizedPaymentStatus,
             ShippingFullName = dto.ShippingFullName,
             ShippingPhone = dto.ShippingPhone,
             ShippingAddressLine = dto.ShippingAddressLine,
@@ -130,12 +135,16 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
         if (order is null) return NotFound();
         if (dto.Details.Count == 0) return BadRequest("Order must have at least 1 detail.");
+        var normalizedOrderStatus = NormalizeOrderStatus(dto.OrderStatus);
+        if (normalizedOrderStatus == null) return BadRequest("Invalid order status.");
+        var normalizedPaymentStatus = NormalizePaymentStatus(dto.PaymentStatus);
+        if (normalizedPaymentStatus == null) return BadRequest("Invalid payment status.");
 
         order.OrderCode = dto.OrderCode;
         order.UserId = dto.UserId;
-        order.OrderStatus = dto.OrderStatus;
+        order.OrderStatus = normalizedOrderStatus;
         order.PaymentMethod = dto.PaymentMethod;
-        order.PaymentStatus = dto.PaymentStatus;
+        order.PaymentStatus = normalizedPaymentStatus;
         order.ShippingFullName = dto.ShippingFullName;
         order.ShippingPhone = dto.ShippingPhone;
         order.ShippingAddressLine = dto.ShippingAddressLine;
@@ -180,8 +189,8 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
     [Authorize(Roles = "Admin,Customer")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var allowedStatuses = new[] { "Pending","Shipped", "Delivered", "Cancelled" };
-        if (!allowedStatuses.Contains(dto.OrderStatus))
+        var allowedStatuses = new[] { OrderStatuses.Pending, OrderStatuses.Shipped, OrderStatuses.Delivered, OrderStatuses.Cancelled };
+        if (!allowedStatuses.Contains(dto.OrderStatus, StringComparer.OrdinalIgnoreCase))
         {
             return BadRequest("Invalid order status.");
         }
@@ -192,14 +201,14 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
             return NotFound();
         }
 
-        order.OrderStatus = dto.OrderStatus;
+        order.OrderStatus = allowedStatuses.First(x => string.Equals(x, dto.OrderStatus, StringComparison.OrdinalIgnoreCase));
         // COD giao thành công => đã thanh toán
         if (
-            order.PaymentMethod == "COD" &&
-            dto.OrderStatus == "Delivered"
+            string.Equals(order.PaymentMethod, "COD", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(order.OrderStatus, OrderStatuses.Delivered, StringComparison.OrdinalIgnoreCase)
         )
         {
-            order.PaymentStatus = "Paid";
+            order.PaymentStatus = PaymentStatuses.Paid;
         }
         order.UpdatedAt = DateTime.UtcNow;
 
@@ -244,9 +253,9 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
             UserId = userId,
             OrderDate = DateTime.UtcNow,
 
-            OrderStatus = "Pending",
+            OrderStatus = OrderStatuses.Pending,
             PaymentMethod = dto.PaymentMethod,
-            PaymentStatus = "Pending",
+            PaymentStatus = PaymentStatuses.Pending,
 
             ShippingFullName = dto.ShippingFullName,
             ShippingPhone = dto.ShippingPhone,
@@ -289,7 +298,7 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
         // ❗ FIX QUAN TRỌNG: set OrderCode = OrderId sau khi save
         order.OrderCode = order.OrderId.ToString();
-        if (dto.PaymentMethod == "COD")
+        if (string.Equals(dto.PaymentMethod, "COD", StringComparison.OrdinalIgnoreCase))
         {
             // tăng sold quantity
             foreach (var item in cartItems)
@@ -314,14 +323,14 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
         var expiredOrders = await dbContext.Orders
             .Include(x => x.OrderDetails)
             .Where(x =>
-                x.PaymentStatus == "Pending" &&
+                x.PaymentStatus == PaymentStatuses.Pending &&
                 x.OrderDate < DateTime.UtcNow.AddMinutes(-15))
             .ToListAsync();
 
         foreach (var order in expiredOrders)
         {
-            order.PaymentStatus = "Cancelled";
-            order.OrderStatus = "Cancelled";
+            order.PaymentStatus = PaymentStatuses.Cancelled;
+            order.OrderStatus = OrderStatuses.Cancelled;
 
             // hoàn kho
             foreach (var detail in order.OrderDetails)
@@ -351,6 +360,18 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
 
         var orders = await dbContext.Orders.Include(x => x.OrderDetails).ThenInclude(x => x.Product).Where(x => x.UserId == userId).OrderByDescending(x => x.OrderDate).ToListAsync();
         return Ok(mapper.Map<List<OrderDto>>(orders));
+    }
+
+    private static string? NormalizeOrderStatus(string? status)
+    {
+        var allowedStatuses = new[] { OrderStatuses.Pending, OrderStatuses.Shipped, OrderStatuses.Delivered, OrderStatuses.Cancelled };
+        return allowedStatuses.FirstOrDefault(x => string.Equals(x, status, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? NormalizePaymentStatus(string? status)
+    {
+        var allowedStatuses = new[] { PaymentStatuses.Pending, PaymentStatuses.Paid, PaymentStatuses.Cancelled };
+        return allowedStatuses.FirstOrDefault(x => string.Equals(x, status, StringComparison.OrdinalIgnoreCase));
     }
 
 }

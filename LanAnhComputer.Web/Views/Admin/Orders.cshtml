@@ -1,7 +1,8 @@
 @model List<LanAnhComputer.Dtos.OrderDto>
+@using LanAnhComputer.Constants
 
 @{
-    ViewData["Title"] = "Quản lý đơn hàng";
+    ViewData["Title"] = "Quan ly don hang";
     ViewData["ActivePage"] = "Orders";
     Layout = "_AdminLayout";
 }
@@ -20,36 +21,35 @@
         <table class="w-full">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Mã đơn</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Tên khách</th>
-                    <th class="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase">Tổng tiền</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Trạng thái</th>
-                    <th class="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase">Xử lý</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Ma don</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Ten khach</th>
+                    <th class="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase">Tong tien</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase">Trang thai</th>
+                    <th class="text-right px-6 py-3 text-xs font-medium text-slate-500 uppercase">Xu ly</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @if (Model == null || Model.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">Chưa có đơn hàng.</td>
+                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">Chua co don hang.</td>
                     </tr>
                 }
                 @foreach (var order in Model ?? new List<LanAnhComputer.Dtos.OrderDto>())
                 {
                     var statusClass = order.OrderStatus switch
                     {
-                        "Pending" => "bg-yellow-100 text-yellow-700",
-                        "Processing" => "bg-blue-100 text-blue-700",
-                        "Shipped" => "bg-purple-100 text-purple-700",
-                        "Delivered" => "bg-emerald-100 text-emerald-700",
-                        "Cancelled" => "bg-red-100 text-red-700",
+                        var status when string.Equals(status, OrderStatuses.Pending, StringComparison.OrdinalIgnoreCase) => "bg-yellow-100 text-yellow-700",
+                        var status when string.Equals(status, OrderStatuses.Shipped, StringComparison.OrdinalIgnoreCase) => "bg-purple-100 text-purple-700",
+                        var status when string.Equals(status, OrderStatuses.Delivered, StringComparison.OrdinalIgnoreCase) => "bg-emerald-100 text-emerald-700",
+                        var status when string.Equals(status, OrderStatuses.Cancelled, StringComparison.OrdinalIgnoreCase) => "bg-red-100 text-red-700",
                         _ => "bg-slate-100 text-slate-700"
                     };
 
                     <tr class="hover:bg-slate-50">
                         <td class="px-6 py-4 text-sm font-medium text-primary-600">@order.OrderCode</td>
                         <td class="px-6 py-4 text-sm text-slate-800">@order.ShippingFullName</td>
-                        <td class="px-6 py-4 text-sm font-semibold text-slate-800 text-right">@order.TotalAmount.ToString("N0")đ</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-slate-800 text-right">@order.TotalAmount.ToString("N0")d</td>
                         <td class="px-6 py-4">
                             <span class="px-2.5 py-1 text-xs font-medium rounded-full @statusClass">@order.OrderStatus</span>
                         </td>
@@ -57,23 +57,18 @@
                             <div class="flex justify-end gap-2">
                                 <form method="post" action="/admin/don-hang/@order.OrderId/trang-thai">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="status" value="Processing" />
-                                    <button class="px-3 py-1.5 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50">Xử lý</button>
+                                    <input type="hidden" name="status" value="@OrderStatuses.Shipped" />
+                                    <button class="px-3 py-1.5 text-sm border border-purple-200 text-purple-700 rounded-lg hover:bg-purple-50">Giao hang</button>
                                 </form>
                                 <form method="post" action="/admin/don-hang/@order.OrderId/trang-thai">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="status" value="Shipped" />
-                                    <button class="px-3 py-1.5 text-sm border border-purple-200 text-purple-700 rounded-lg hover:bg-purple-50">Giao hàng</button>
+                                    <input type="hidden" name="status" value="@OrderStatuses.Delivered" />
+                                    <button class="px-3 py-1.5 text-sm border border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-50">Hoan tat</button>
                                 </form>
-                                <form method="post" action="/admin/don-hang/@order.OrderId/trang-thai">
+                                <form method="post" action="/admin/don-hang/@order.OrderId/trang-thai" onsubmit="return confirm('Huy don hang nay?')">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="status" value="Delivered" />
-                                    <button class="px-3 py-1.5 text-sm border border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-50">Hoàn tất</button>
-                                </form>
-                                <form method="post" action="/admin/don-hang/@order.OrderId/trang-thai" onsubmit="return confirm('Hủy đơn hàng này?')">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="status" value="Cancelled" />
-                                    <button class="px-3 py-1.5 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-50">Hủy</button>
+                                    <input type="hidden" name="status" value="@OrderStatuses.Cancelled" />
+                                    <button class="px-3 py-1.5 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-50">Huy</button>
                                 </form>
                             </div>
                         </td>

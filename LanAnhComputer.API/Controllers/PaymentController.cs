@@ -1,4 +1,5 @@
 using LanAnhComputer.Data;
+using LanAnhComputer.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayOS;
@@ -36,7 +37,7 @@ public class PaymentController : ControllerBase
             return NotFound();
 
         // ❗ nếu đã thanh toán thì không tạo lại
-        if (order.PaymentStatus == "PAID")
+        if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
             return BadRequest("Order already paid");
 
         // ❗ nếu đã có link thì trả lại luôn
@@ -72,7 +73,7 @@ public class PaymentController : ControllerBase
         order.PayOSOrderCode = payOSOrderCode;
         order.PaymentLinkId = paymentLink.PaymentLinkId;
         order.CheckoutUrl = paymentLink.CheckoutUrl;
-        order.PaymentStatus = "PENDING";
+        order.PaymentStatus = PaymentStatuses.Pending;
 
         await _dbContext.SaveChangesAsync();
 
@@ -118,14 +119,14 @@ public class PaymentController : ControllerBase
             }
 
             // 3. CHỐNG xử lý lại nhiều lần (idempotent)
-            if (order.PaymentStatus == "Paid")
+            if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
             {
                 return Ok();
             }
 
             // 4. Update trạng thái
-            order.PaymentStatus = "Paid";
-            order.OrderStatus = "Shipped";
+            order.PaymentStatus = PaymentStatuses.Paid;
+            order.OrderStatus = OrderStatuses.Shipped;
             order.PaidAt = DateTime.UtcNow;
             order.TransactionId = data.Reference;
 
@@ -158,7 +159,7 @@ public class PaymentController : ControllerBase
 
             return Ok();
         }
-        catch (Exception ex)
+        catch (Exception)
         {          
             return Ok(); // luôn trả 200 để PayOS không retry lỗi
         }
@@ -167,9 +168,19 @@ public class PaymentController : ControllerBase
     [HttpPost("confirm-webhook")]
     public async Task<IActionResult> ConfirmWebhook()
     {
-        var result = await _client.Webhooks.ConfirmAsync(
-            "https://parking-trend-editor.ngrok-free.dev/api/payment/webhook"
-        );
+        var webhookUrl = _configuration["PayOS:WebhookUrl"];
+
+        if (string.IsNullOrWhiteSpace(webhookUrl))
+        {
+            webhookUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/api/payment/webhook";
+        }
+
+        if (!Uri.TryCreate(webhookUrl, UriKind.Absolute, out _))
+        {
+            return BadRequest("PayOS webhook URL is invalid.");
+        }
+
+        var result = await _client.Webhooks.ConfirmAsync(webhookUrl);
 
         return Ok(result);
     }

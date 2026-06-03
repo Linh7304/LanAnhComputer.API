@@ -1,4 +1,6 @@
-﻿namespace LanAnhComputer.Data.Entities
+using LanAnhComputer.Constants;
+
+namespace LanAnhComputer.Data.Entities
 {
     public class Order
     {
@@ -6,9 +8,9 @@
         public string OrderCode { get; set; } = null!;
         public long UserId { get; set; }
         public DateTime OrderDate { get; set; }
-        public string OrderStatus { get; set; } = "Pending";
+        public string OrderStatus { get; set; } = OrderStatuses.Pending;
         public string PaymentMethod { get; set; } = "COD";
-        public string PaymentStatus { get; set; } = "Pending";
+        public string PaymentStatus { get; set; } = PaymentStatuses.Pending;
 
         public string ShippingFullName { get; set; } = null!;
         public string ShippingPhone { get; set; } = null!;
@@ -35,9 +37,7 @@
 
         public string? TransactionId { get; set; }
 
-
         public User User { get; set; } = null!;
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-
     }
 }

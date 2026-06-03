@@ -202,18 +202,9 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProductDto>> Create([FromForm] ProductUpsertDto dto)
     {
-        var validTypes = new[] { "Computer", "Component" };
+        var productType = await ResolveProductTypeFromCategoryAsync(dto.CategoryId);
 
-        if (!validTypes.Contains(dto.ProductType))
-        {
-            return BadRequest(new
-            {
-                message = "Loại sản phẩm không hợp lệ."
-            });
-        }
-        var categoryExists = await dbContext.Categories.AnyAsync(x => x.CategoryId == dto.CategoryId);
-
-        if (!categoryExists)
+        if (productType == null)
         {
             return BadRequest("Danh mục không tồn tại");
         }
@@ -222,6 +213,7 @@ public class ProductsController : ControllerBase
 
         var entity = mapper.Map<Product>(dto);
 
+        entity.ProductType = productType;
         entity.ImageUrl = imageUrl;
         entity.ThumbnailUrl = dto.ThumbnailUrl ?? imageUrl;
 
@@ -268,7 +260,15 @@ public class ProductsController : ControllerBase
             return NotFound();
         }
 
+        var productType = await ResolveProductTypeFromCategoryAsync(dto.CategoryId);
+
+        if (productType == null)
+        {
+            return BadRequest("Danh mục không tồn tại");
+        }
+
         mapper.Map(dto, entity);
+        entity.ProductType = productType;
 
         if (dto.Image != null)
         {
@@ -475,5 +475,55 @@ public class ProductsController : ControllerBase
         await image.CopyToAsync(stream);
 
         return $"/uploads/products/{fileName}";
+    }
+
+    private async Task<string?> ResolveProductTypeFromCategoryAsync(int categoryId)
+    {
+        var categories = await dbContext.Categories
+            .AsNoTracking()
+            .ToListAsync();
+
+        var category = categories.FirstOrDefault(x => x.CategoryId == categoryId);
+        if (category == null)
+        {
+            return null;
+        }
+
+        var rootCategory = category;
+        while (rootCategory.ParentCategoryId.HasValue)
+        {
+            var parent = categories.FirstOrDefault(x => x.CategoryId == rootCategory.ParentCategoryId.Value);
+            if (parent == null)
+            {
+                break;
+            }
+
+            rootCategory = parent;
+        }
+
+        var normalizedRoot = NormalizeCategoryText($"{rootCategory.CategoryCode} {rootCategory.CategoryName}");
+
+        if (normalizedRoot.Contains("LINHKIEN") || normalizedRoot.Contains("COMPONENT"))
+        {
+            return "Component";
+        }
+
+        if (normalizedRoot.Contains("MAYTINH") || normalizedRoot.Contains("COMPUTER") || normalizedRoot.Contains("LAPTOP") || normalizedRoot.Contains("PC"))
+        {
+            return "Computer";
+        }
+
+        return "Computer";
+    }
+
+    private static string NormalizeCategoryText(string value)
+    {
+        var normalized = value.Normalize(System.Text.NormalizationForm.FormD);
+        var chars = normalized
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToUpperInvariant);
+
+        return new string(chars.ToArray());
     }
 }

@@ -1,4 +1,5 @@
 using LanAnhComputer.Dtos;
+using LanAnhComputer.Constants;
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.Services;
 using LanAnhComputer.Web.ViewModels;
@@ -13,17 +14,20 @@ namespace LanAnhComputer.Web.Controllers
         private readonly IOrderService _orderService;
         private readonly IAdminInventoryService _inventoryService;
         private readonly IUserService _userService;
+        private readonly ICategoryService _categoryService;
 
         public AdminController(
             IProductService productService,
             IOrderService orderService,
             IAdminInventoryService inventoryService,
-            IUserService userService)
+            IUserService userService,
+            ICategoryService categoryService)
         {
             _productService = productService;
             _orderService = orderService;
             _inventoryService = inventoryService;
             _userService = userService;
+            _categoryService = categoryService;
         }
 
         [HttpGet("")]
@@ -56,8 +60,76 @@ namespace LanAnhComputer.Web.Controllers
 
             var products = await _productService.GetProductsAsync(pageNumber, 50, null, search);
             ViewBag.Search = search;
+            ViewBag.Categories = await _categoryService.GetCategoriesAsync();
 
             return View(products);
+        }
+
+        [HttpGet("danh-muc")]
+        public async Task<IActionResult> Categories()
+        {
+            var token = GetAdminToken();
+            if (token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var categories = await _categoryService.GetCategoriesAsync();
+            return View(categories);
+        }
+
+        [HttpPost("danh-muc/them")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateCategory(CategoryUpsertDto category)
+        {
+            var token = GetAdminToken();
+            if (token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var isSuccess = await _categoryService.CreateCategoryAsync(category, token);
+            TempData[isSuccess ? "Success" : "Error"] = isSuccess
+                ? "Da them danh muc."
+                : "Khong the them danh muc.";
+
+            return RedirectToAction(nameof(Categories));
+        }
+
+        [HttpPost("danh-muc/sua")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCategory(int categoryId, CategoryUpsertDto category)
+        {
+            var token = GetAdminToken();
+            if (token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var isSuccess = await _categoryService.UpdateCategoryAsync(categoryId, category, token);
+            TempData[isSuccess ? "Success" : "Error"] = isSuccess
+                ? "Da cap nhat danh muc."
+                : "Khong the cap nhat danh muc.";
+
+            return RedirectToAction(nameof(Categories));
+        }
+
+        [HttpPost("danh-muc/xoa/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var token = GetAdminToken();
+            if (token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var isSuccess = await _categoryService.DeleteCategoryAsync(id, token);
+            TempData[isSuccess ? "Success" : "Error"] = isSuccess
+                ? "Da xoa danh muc."
+                : "Khong the xoa danh muc. Kiem tra danh muc co dang duoc san pham su dung hay khong.";
+
+            return RedirectToAction(nameof(Categories));
         }
 
         [HttpPost("san-pham/them")]
@@ -251,7 +323,15 @@ namespace LanAnhComputer.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var isSuccess = await _orderService.UpdateOrderStatusAsync(id, status, token);
+            var allowedStatuses = new[] { OrderStatuses.Pending, OrderStatuses.Shipped, OrderStatuses.Delivered, OrderStatuses.Cancelled };
+            var normalizedStatus = allowedStatuses.FirstOrDefault(x => string.Equals(x, status, StringComparison.OrdinalIgnoreCase));
+            if (normalizedStatus == null)
+            {
+                TempData["Error"] = "Trang thai don hang khong hop le.";
+                return RedirectToAction(nameof(Orders));
+            }
+
+            var isSuccess = await _orderService.UpdateOrderStatusAsync(id, normalizedStatus, token);
             TempData[isSuccess ? "Success" : "Error"] = isSuccess
                 ? "Da cap nhat trang thai don hang."
                 : "Khong the cap nhat trang thai don hang.";

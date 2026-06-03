@@ -60,11 +60,11 @@ public class OrderUpsertDto // dữ liệu để tạo hoặc cập nhật đơn
     [Range(1, long.MaxValue)]
     public long UserId { get; set; }
     [Required]
-    public string OrderStatus { get; set; } = "Pending";
+    public string OrderStatus { get; set; } = LanAnhComputer.Constants.OrderStatuses.Pending;
     [Required]
     public string PaymentMethod { get; set; } = "COD";
     [Required]
-    public string PaymentStatus { get; set; } = "Unpaid";
+    public string PaymentStatus { get; set; } = LanAnhComputer.Constants.PaymentStatuses.Pending;
     [Required]
     [MaxLength(150)]
     public string ShippingFullName { get; set; } = null!;

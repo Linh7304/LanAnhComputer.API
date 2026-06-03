@@ -122,8 +122,7 @@ public class ProductUpsertDto
     [MaxLength(255)]
     public string ProductName { get; set; } = null!;
 
-    [Required]
-    public string ProductType { get; set; } = null!;
+    public string? ProductType { get; set; }
 
     public string? Brand { get; set; }
 

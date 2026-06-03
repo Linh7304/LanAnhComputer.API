@@ -153,9 +153,9 @@ namespace LanAnhComputer.Data
                 entity.HasKey(x => x.OrderId);
                 entity.Property(x => x.OrderCode).HasMaxLength(30).IsUnicode(false).IsRequired();
                 entity.Property(x => x.OrderDate).HasDefaultValueSql("SYSDATETIME()");
-                entity.Property(x => x.OrderStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Pending");
+                entity.Property(x => x.OrderStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue(LanAnhComputer.Constants.OrderStatuses.Pending);
                 entity.Property(x => x.PaymentMethod).HasMaxLength(20).IsUnicode(false).HasDefaultValue("COD");
-                entity.Property(x => x.PaymentStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Unpaid");
+                entity.Property(x => x.PaymentStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue(LanAnhComputer.Constants.PaymentStatuses.Pending);
                 entity.Property(x => x.ShippingFullName).HasMaxLength(150).IsRequired();
                 entity.Property(x => x.ShippingPhone).HasMaxLength(20).IsUnicode(false).IsRequired();
                 entity.Property(x => x.ShippingAddressLine).HasMaxLength(255).IsRequired();
