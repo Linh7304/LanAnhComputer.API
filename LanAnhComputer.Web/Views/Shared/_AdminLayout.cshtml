@@ -77,14 +77,13 @@
                 <li>
                     <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "bg-sidebar-accent text-white" : "text-slate-300")">
                         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                        <span>Tổng quan</span>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
                     <a href="/admin/don-hang" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Orders" ? "bg-sidebar-accent text-white" : "text-slate-300")">
                         <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                         <span>Đơn hàng</span>
-                        <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">12</span>
                     </a>
                 </li>
                 <li>
@@ -108,25 +107,13 @@
                 <li>
                     <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Users" ? "bg-sidebar-accent text-white" : "text-slate-300")">
                         <i data-lucide="users" class="w-5 h-5"></i>
-                        <span>Users</span>
+                        <span>Người dùng</span>
                     </a>
                 </li>
                 <li>
                     <a href="/admin/chatbot" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Chatbot" ? "bg-sidebar-accent text-white" : "text-slate-300")">
                         <i data-lucide="message-square" class="w-5 h-5"></i>
                         <span>Quản lý Chatbot</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/admin/bao-cao" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Reports" ? "bg-sidebar-accent text-white" : "text-slate-300")">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                        <span>Báo cáo</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/admin/cai-dat" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors @(ViewData["ActivePage"]?.ToString() == "Settings" ? "bg-sidebar-accent text-white" : "text-slate-300")">
-                        <i data-lucide="settings" class="w-5 h-5"></i>
-                        <span>Cài đặt</span>
                     </a>
                 </li>
             </ul>

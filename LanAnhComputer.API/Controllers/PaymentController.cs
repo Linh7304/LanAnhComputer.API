@@ -1,9 +1,9 @@
 using LanAnhComputer.Data;
 using LanAnhComputer.Constants;
+using LanAnhComputer.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayOS;
-using PayOS.Models;
 using PayOS.Models.V2.PaymentRequests;
 using PayOS.Models.Webhooks;
 
@@ -36,11 +36,9 @@ public class PaymentController : ControllerBase
         if (order == null)
             return NotFound();
 
-        // ❗ nếu đã thanh toán thì không tạo lại
         if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
             return BadRequest("Order already paid");
 
-        // ❗ nếu đã có link thì trả lại luôn
         if (!string.IsNullOrEmpty(order.PaymentLinkId))
         {
             return Ok(new
@@ -50,7 +48,6 @@ public class PaymentController : ControllerBase
             });
         }
 
-        // ✔ FIX: dùng OrderId làm PayOSOrderCode
         var payOSOrderCode = order.OrderId;
 
         var returnUrl = _configuration["PayOS:ReturnUrl"]
@@ -64,7 +61,7 @@ public class PaymentController : ControllerBase
             OrderCode = payOSOrderCode,
             Amount = (int)order.TotalAmount,
             Description = $"DH{order.OrderId}",
-            ReturnUrl = returnUrl,
+            ReturnUrl = $"{returnUrl}?orderId={order.OrderId}",
             CancelUrl = cancelUrl
         };
 
@@ -80,19 +77,12 @@ public class PaymentController : ControllerBase
         return Ok(new
         {
             orderId = order.OrderId,
-
             checkoutUrl = paymentLink.CheckoutUrl,
-
             qrCode = paymentLink.QrCode,
-
             bin = paymentLink.Bin,
-
             accountNumber = paymentLink.AccountNumber,
-
             accountName = paymentLink.AccountName,
-
             description = paymentLink.Description,
-
             amount = paymentLink.Amount
         });
     }
@@ -102,66 +92,24 @@ public class PaymentController : ControllerBase
     {
         try
         {
-            // 1. Verify webhook (chống fake)
             var data = await _client.Webhooks.VerifyAsync(webhook);
 
-            var orderCode = data.OrderCode;
-
-            // 2. Tìm order
             var order = await _dbContext.Orders
-     .Include(x => x.OrderDetails)
-     .FirstOrDefaultAsync(x => x.PayOSOrderCode == orderCode);
+                .Include(x => x.OrderDetails)
+                .FirstOrDefaultAsync(x => x.PayOSOrderCode == data.OrderCode);
 
-            // ❗ KHÔNG return NotFound trong webhook
             if (order == null)
             {
                 return Ok();
             }
 
-            // 3. CHỐNG xử lý lại nhiều lần (idempotent)
-            if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
-            {
-                return Ok();
-            }
-
-            // 4. Update trạng thái
-            order.PaymentStatus = PaymentStatuses.Paid;
-            order.OrderStatus = OrderStatuses.Shipped;
-            order.PaidAt = DateTime.UtcNow;
-            order.TransactionId = data.Reference;
-
-            foreach (var detail in order.OrderDetails)
-            {
-                var product = await _dbContext.Products
-                    .FirstOrDefaultAsync(x => x.ProductId == detail.ProductId);
-
-                if (product != null)
-                {
-                    product.SoldQuantity += detail.Quantity;
-                }
-            }
-            // 3. Remove cart items
-            // =========================
-
-            var cart = await _dbContext.Carts
-                .FirstOrDefaultAsync(x => x.UserId == order.UserId);
-
-            if (cart != null)
-            {
-                var cartItems = await _dbContext.CartItems
-                    .Where(x => x.CartId == cart.CartId)
-                    .ToListAsync();
-
-                _dbContext.CartItems.RemoveRange(cartItems);
-            }
-
-            await _dbContext.SaveChangesAsync();
-
+            await CompleteOrderPaymentAsync(order, data.Reference);
             return Ok();
         }
-        catch (Exception)
-        {          
-            return Ok(); // luôn trả 200 để PayOS không retry lỗi
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PayOS Webhook Error]: {ex.Message}");
+            return Ok();
         }
     }
 
@@ -184,18 +132,95 @@ public class PaymentController : ControllerBase
 
         return Ok(result);
     }
+
     [HttpGet("status/{orderId}")]
     public async Task<IActionResult> CheckStatus(long orderId)
     {
         var order = await _dbContext.Orders
+            .Include(x => x.OrderDetails)
             .FirstOrDefaultAsync(x => x.OrderId == orderId);
 
         if (order == null)
             return NotFound();
+
+        if (!string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
+        {
+            await TrySyncPaymentFromPayOSAsync(order);
+        }
 
         return Ok(new
         {
             paymentStatus = order.PaymentStatus
         });
     }
+
+    private async Task TrySyncPaymentFromPayOSAsync(Order order)
+    {
+        if (!order.PayOSOrderCode.HasValue)
+        {
+            return;
+        }
+
+        try
+        {
+            var paymentLink = await _client.PaymentRequests.GetAsync(order.PayOSOrderCode.Value);
+            if (!IsPayOSPaymentCompleted(paymentLink))
+            {
+                return;
+            }
+
+            var transactionId = paymentLink.Transactions?.LastOrDefault()?.Reference;
+            await CompleteOrderPaymentAsync(order, transactionId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PayOS Sync Error] Order {order.OrderId}: {ex.Message}");
+        }
     }
+
+    private static bool IsPayOSPaymentCompleted(PaymentLink paymentLink)
+    {
+        var status = paymentLink.Status.ToString();
+        return string.Equals(status, "PAID", StringComparison.OrdinalIgnoreCase)
+               || paymentLink.AmountPaid >= paymentLink.Amount;
+    }
+
+    private async Task CompleteOrderPaymentAsync(Order order, string? transactionId)
+    {
+        if (string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        order.PaymentStatus = PaymentStatuses.Paid;
+        order.OrderStatus = OrderStatuses.Shipped;
+        order.PaidAt = DateTime.UtcNow;
+        order.TransactionId = transactionId;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        foreach (var detail in order.OrderDetails)
+        {
+            var product = await _dbContext.Products
+                .FirstOrDefaultAsync(x => x.ProductId == detail.ProductId);
+
+            if (product != null)
+            {
+                product.SoldQuantity += detail.Quantity;
+            }
+        }
+
+        var cart = await _dbContext.Carts
+            .FirstOrDefaultAsync(x => x.UserId == order.UserId);
+
+        if (cart != null)
+        {
+            var cartItems = await _dbContext.CartItems
+                .Where(x => x.CartId == cart.CartId)
+                .ToListAsync();
+
+            _dbContext.CartItems.RemoveRange(cartItems);
+        }
+
+        await _dbContext.SaveChangesAsync();
+    }
+}

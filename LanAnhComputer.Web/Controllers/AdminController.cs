@@ -15,24 +15,27 @@ namespace LanAnhComputer.Web.Controllers
         private readonly IAdminInventoryService _inventoryService;
         private readonly IUserService _userService;
         private readonly ICategoryService _categoryService;
+        private readonly IDashboardService _dashboardService;
 
         public AdminController(
             IProductService productService,
             IOrderService orderService,
             IAdminInventoryService inventoryService,
             IUserService userService,
-            ICategoryService categoryService)
+            ICategoryService categoryService,
+            IDashboardService dashboardService)
         {
             _productService = productService;
             _orderService = orderService;
             _inventoryService = inventoryService;
             _userService = userService;
             _categoryService = categoryService;
+            _dashboardService = dashboardService;
         }
 
         [HttpGet("")]
         [HttpGet("dashboard")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int days = 30)
         {
             var token = GetAdminToken();
             if (token == null)
@@ -40,13 +43,18 @@ namespace LanAnhComputer.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var summary = await _inventoryService.GetSummaryAsync(token);
+            var chartDays = Math.Clamp(days, 7, 90);
+            var overview = await _dashboardService.GetOverviewAsync(token, chartDays);
 
             return View(new AdminDashboardViewModel
             {
-                OutOfStockCount = summary?.OutOfStockCount ?? 0,
-                LowStockCount = summary?.LowStockCount ?? 0,
-                TopSellingProducts = summary?.TopSellingProducts ?? new List<TopSellingProductDto>()
+                TotalCustomers = overview?.TotalCustomers ?? 0,
+                TotalOrders = overview?.TotalOrders ?? 0,
+                TotalRevenue = overview?.TotalRevenue ?? 0,
+                TotalProducts = overview?.TotalProducts ?? 0,
+                PendingOrders = overview?.PendingOrders ?? 0,
+                DailyRevenue = overview?.DailyRevenue ?? new List<RevenueByDateDto>(),
+                ChartDays = chartDays
             });
         }
 
@@ -313,6 +321,24 @@ namespace LanAnhComputer.Web.Controllers
             return View(orders);
         }
 
+        [HttpGet("don-hang/{id:long}")]
+        public async Task<IActionResult> OrderDetails(long id)
+        {
+            var token = GetAdminToken();
+            if (token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _orderService.GetOrderByIdAsync(id, token);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
+
         [HttpPost("don-hang/{id:long}/trang-thai")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateOrderStatus(long id, string status)
@@ -453,9 +479,8 @@ namespace LanAnhComputer.Web.Controllers
 
             var isSuccess = await _userService.UpdateRoleAsync(id, role, token);
             TempData[isSuccess ? "Success" : "Error"] = isSuccess
-                ? "Da cap nhat role."
-                : "Khong the cap nhat role.";
-
+                ? "Đã cập nhật vai trò."
+                : "Không thể cập nhật vai trò.";
             return RedirectToAction(nameof(Users));
         }
 

@@ -1,7 +1,7 @@
 @model LanAnhComputer.Web.Models.AdminDashboardViewModel
 
 @{
-    ViewData["Title"] = "Tong quan";
+    ViewData["Title"] = "Báo cáo tổng quan";
     ViewData["ActivePage"] = "Dashboard";
     Layout = "_AdminLayout";
 }
@@ -13,7 +13,7 @@
                 <i data-lucide="package-x" class="w-6 h-6 text-red-600"></i>
             </div>
         </div>
-        <p class="text-sm text-slate-500 mb-1">San pham het hang</p>
+        <p class="text-sm text-slate-500 mb-1">Sản phẩm hết hàng</p>
         <p class="text-2xl font-bold text-slate-800">@Model.OutOfStockCount</p>
     </div>
 
@@ -23,7 +23,7 @@
                 <i data-lucide="triangle-alert" class="w-6 h-6 text-yellow-600"></i>
             </div>
         </div>
-        <p class="text-sm text-slate-500 mb-1">San pham sap het</p>
+        <p class="text-sm text-slate-500 mb-1">Sản phẩm sắp hết</p>
         <p class="text-2xl font-bold text-slate-800">@Model.LowStockCount</p>
     </div>
 
@@ -33,15 +33,15 @@
                 <i data-lucide="trending-up" class="w-6 h-6 text-emerald-600"></i>
             </div>
         </div>
-        <p class="text-sm text-slate-500 mb-1">Top ban chay</p>
+        <p class="text-sm text-slate-500 mb-1">Top bán chạy</p>
         <p class="text-2xl font-bold text-slate-800">@Model.TopSellingProducts.Count</p>
     </div>
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
     <div class="flex items-center justify-between p-6 border-b border-slate-200">
-        <h2 class="text-lg font-semibold text-slate-800">Top san pham ban chay</h2>
-        <a href="/admin/kho-hang" class="text-primary-600 hover:text-primary-700 text-sm font-medium">Quan ly kho</a>
+        <h2 class="text-lg font-semibold text-slate-800">Top sản phẩm bán chạy</h2>
+        <a href="/admin/kho-hang" class="text-primary-600 hover:text-primary-700 text-sm font-medium">Quarn lý kho</a>
     </div>
 
     <div class="overflow-x-auto">
