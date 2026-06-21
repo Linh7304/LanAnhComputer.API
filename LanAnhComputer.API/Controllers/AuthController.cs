@@ -19,9 +19,16 @@ public class AuthController(AppDbContext dbContext, IConfiguration configuration
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto dto)
     {
-        if (await dbContext.Users.AnyAsync(x => x.Email == dto.Email))
-            return BadRequest("Email already exists.");
+        var errors = new Dictionary<string, string>();
 
+        if (await dbContext.Users.AnyAsync(x => x.Email == dto.Email))
+            errors["email"] = "Email đã tồn tại";
+
+        if (await dbContext.Users.AnyAsync(x => x.Phone == dto.Phone))
+            errors["phone"] = "Số điện thoại đã tồn tại";
+
+        if (errors.Any())
+            return BadRequest(errors);
         var user = new User
         {
             FullName = dto.FullName,

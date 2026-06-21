@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Data;
 using LanAnhComputer.Data.Entities;
@@ -35,6 +35,7 @@ public class OrdersController(AppDbContext dbContext, IMapper mapper, IInventory
     {
         var order = await dbContext.Orders
             .Include(x => x.OrderDetails)
+                .ThenInclude(x => x.Product)
             .FirstOrDefaultAsync(x => x.OrderId == id);
 
         if (order is null) return NotFound();

@@ -1,0 +1,166 @@
+@model LanAnhComputer.Dtos.OrderDto
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <nav class="flex items-center gap-2 text-sm text-slate-500 mb-8">
+        <a href="/" class="hover:text-primary-600">Trang chủ</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <a href="/Orders" class="hover:text-primary-600">Đơn hàng của tôi</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-slate-800">Chi tiết đơn hàng</span>
+    </nav>
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Đơn hàng #@Model.OrderCode</h1>
+            <p class="text-slate-500 mt-1">Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+        <div>
+            @if (Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Pending)
+            {
+                <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Đang xử lý</span>
+            }
+            else if (Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Shipped)
+            {
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">Đang giao hàng</span>
+            }
+            else if (Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Delivered)
+            {
+                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Đã giao hàng</span>
+            }
+            else if (Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Cancelled)
+            {
+                <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">Đã hủy</span>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                    <h2 class="font-bold text-slate-800">Sản phẩm</h2>
+                    <span class="text-sm font-medium text-slate-500">@Model.OrderDetails.Count sản phẩm</span>
+                </div>
+                <div class="divide-y divide-slate-100 p-5">
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <div class="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div class="w-20 h-20 bg-slate-50 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100">
+                                <img src="@(item.ImageUrl ?? "https://placehold.co/400x400?text=No+Image")" class="w-full h-full object-contain p-1" alt="@item.ProductName" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <a href="/Products/Details?id=@item.ProductId" class="font-medium text-slate-800 hover:text-primary-600 line-clamp-2 mb-1">@item.ProductName</a>
+                                <p class="text-sm text-slate-500">Số lượng: @item.Quantity</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-primary-600">@item.LineTotal.ToString("N0")đ</p>
+                                @if (item.Quantity > 1)
+                                {
+                                    <p class="text-xs text-slate-400 mt-1">@item.UnitPrice.ToString("N0")đ / sp</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 mt-4">
+                <a href="/Orders" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition-colors flex items-center gap-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Quay lại lịch sử
+                </a>
+                
+                @if (Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Pending)
+                {
+                    <form action="/Orders/CancelOrder" method="post" class="inline-block" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+                        <button type="submit" class="px-5 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors">
+                            Hủy đơn hàng
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4 pb-3 border-b border-slate-200">Tổng thanh toán</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Tạm tính</span>
+                        <span>@Model.SubTotal.ToString("N0")đ</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Giảm giá</span>
+                        <span>-@Model.DiscountAmount.ToString("N0")đ</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Phí vận chuyển</span>
+                        <span>@Model.ShippingFee.ToString("N0")đ</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg text-slate-800 pt-3 border-t border-slate-200 mt-3">
+                        <span>Tổng cộng</span>
+                        <span class="text-red-600">@Model.TotalAmount.ToString("N0")đ</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Thông tin giao hàng</h3>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <span class="block text-slate-500 mb-1">Người nhận</span>
+                        <span class="font-medium text-slate-800">@Model.ShippingFullName - @Model.ShippingPhone</span>
+                    </div>
+                    <div>
+                        <span class="block text-slate-500 mb-1">Địa chỉ nhận hàng</span>
+                        <span class="text-slate-800 block">
+                            @Model.ShippingAddressLine<br />
+                            @if (!string.IsNullOrEmpty(Model.ShippingWard))
+                            {
+                                <text>@Model.ShippingWard, </text>
+                            }
+                            @Model.ShippingProvince
+                        </span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div>
+                            <span class="block text-slate-500 mb-1">Ghi chú</span>
+                            <span class="text-slate-800 block">@Model.Note</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100">Thanh toán</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Phương thức</span>
+                        <span class="font-medium text-slate-800">@Model.PaymentMethod</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">Trạng thái</span>
+                        @if (Model.PaymentStatus == LanAnhComputer.Constants.PaymentStatuses.Paid)
+                        {
+                            <span class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-xs font-medium">Đã thanh toán</span>
+                        }
+                        else if (Model.PaymentStatus == LanAnhComputer.Constants.PaymentStatuses.Cancelled)
+                        {
+                            <span class="px-2 py-1 bg-red-50 text-red-700 rounded text-xs font-medium">Đã hủy</span>
+                        }
+                        else
+                        {
+                            <span class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-medium">Chờ thanh toán</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

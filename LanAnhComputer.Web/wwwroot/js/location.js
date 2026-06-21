@@ -10,7 +10,7 @@ async function loadProvinces() {
 
     data.forEach(p => {
         provinceSelect.innerHTML += `
-            <option value="${p.code}">${p.name}</option>
+            <option value="${p.name}" data-code="${p.code}">${p.name}</option>
         `;
     });
 }
@@ -29,14 +29,16 @@ async function loadWardsByProvince(provinceCode) {
 
     wards.forEach(w => {
         wardSelect.innerHTML += `
-            <option value="${w.code}">${w.name}</option>
+            <option value="${w.name}" data-code="${w.code}">${w.name}</option>
         `;
     });
 }
 
 // 3. Event change
 provinceSelect.addEventListener("change", function () {
-    loadWardsByProvince(this.value);
+    const selectedOption = this.options[this.selectedIndex];
+    const code = selectedOption.getAttribute("data-code");
+    loadWardsByProvince(code);
 });
 
 // init

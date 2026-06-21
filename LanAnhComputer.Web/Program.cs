@@ -6,7 +6,18 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .ConfigureApplicationPartManager(manager =>
+    {
+        var apiAssembly = typeof(LanAnhComputer.API.Controllers.ChatbotController).Assembly;
+        var partsToRemove = manager.ApplicationParts
+            .Where(part => part.Name == apiAssembly.GetName().Name)
+            .ToList();
+        foreach (var part in partsToRemove)
+        {
+            manager.ApplicationParts.Remove(part);
+        }
+    });
 
 builder.Services.AddHttpClient<IProductService, ProductService>(client =>
 {
@@ -44,6 +55,11 @@ builder.Services.AddHttpClient<IUserService, UserService>(client =>
 });
 
 builder.Services.AddHttpClient<ICategoryService, CategoryService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7132/");
+});
+
+builder.Services.AddHttpClient<IChatbotService, ChatbotService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7132/");
 });

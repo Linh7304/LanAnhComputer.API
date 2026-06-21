@@ -7,10 +7,12 @@ namespace LanAnhComputer.Web.Controllers
     public class OrdersController : Controller
     {
         private readonly ICheckoutService _checkoutService;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(ICheckoutService checkoutService)
+        public OrdersController(ICheckoutService checkoutService, IOrderService orderService)
         {
             _checkoutService = checkoutService;
+            _orderService = orderService;
         }
 
         [HttpGet]
@@ -46,6 +48,23 @@ namespace LanAnhComputer.Web.Controllers
 
             return View(orders);
         }
+
+        [HttpGet("Orders/Details")]
+        public async Task<IActionResult> Details(long orderId)
+        {
+            var token = HttpContext.Session.GetString("JWT");
+            if (string.IsNullOrEmpty(token))
+                return Redirect("/");
+
+            var order = await _orderService.GetOrderByIdAsync(orderId, token);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CancelOrder(long orderId) //  Huỷ dơn hàng
         {

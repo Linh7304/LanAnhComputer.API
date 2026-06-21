@@ -1,0 +1,150 @@
+@model LanAnhComputer.Dtos.OrderDto
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800">Chi tiết đơn hàng: @Model.OrderCode</h1>
+        <p class="text-slate-500 mt-1">Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <a href="/admin/don-hang" class="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 inline-block mr-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                Sản phẩm đã đặt
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
+                            <th class="p-4 font-medium">Sản phẩm</th>
+                            <th class="p-4 font-medium text-center">Đơn giá</th>
+                            <th class="p-4 font-medium text-center">SL</th>
+                            <th class="p-4 font-medium text-right">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                                            <img src="@(item.ImageUrl ?? "https://placehold.co/400x400?text=No+Image")" class="w-full h-full object-cover" alt="@item.ProductName" />
+                                        </div>
+                                        <span class="font-medium text-slate-800 line-clamp-2">@item.ProductName</span>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center text-slate-600">@item.UnitPrice.ToString("N0")đ</td>
+                                <td class="p-4 text-center font-medium text-slate-800">@item.Quantity</td>
+                                <td class="p-4 text-right font-medium text-primary-600">@item.LineTotal.ToString("N0")đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
+                <div class="flex justify-between text-slate-600">
+                    <span>Tạm tính:</span>
+                    <span>@Model.SubTotal.ToString("N0")đ</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Giảm giá:</span>
+                    <span>-@Model.DiscountAmount.ToString("N0")đ</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Phí giao hàng:</span>
+                    <span>@Model.ShippingFee.ToString("N0")đ</span>
+                </div>
+                <div class="flex justify-between font-bold text-lg text-slate-800 pt-2 border-t border-slate-200 mt-2">
+                    <span>Tổng cộng:</span>
+                    <span class="text-red-600">@Model.TotalAmount.ToString("N0")đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                Thông tin khách hàng & Giao hàng
+            </div>
+            <div class="p-4 space-y-4">
+                <div>
+                    <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Họ tên</label>
+                    <p class="font-medium text-slate-800 mt-1">@Model.ShippingFullName</p>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Số điện thoại</label>
+                    <p class="font-medium text-slate-800 mt-1">@Model.ShippingPhone</p>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Địa chỉ giao hàng</label>
+                    <p class="text-slate-800 mt-1">
+                        @Model.ShippingAddressLine<br />
+                        @if (!string.IsNullOrEmpty(Model.ShippingWard))
+                        {
+                            <text>@Model.ShippingWard, </text>
+                        }
+                        @Model.ShippingProvince
+                    </p>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <div>
+                        <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Ghi chú</label>
+                        <p class="text-slate-800 mt-1 bg-amber-50 p-3 rounded-lg border border-amber-100">@Model.Note</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                Trạng thái đơn hàng
+            </div>
+            <div class="p-4 space-y-4">
+                <div>
+                    <label class="text-xs text-slate-500 font-medium uppercase tracking-wider">Trạng thái thanh toán</label>
+                    <div class="mt-2">
+                        @if (Model.PaymentStatus == LanAnhComputer.Constants.PaymentStatuses.Paid)
+                        {
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Đã thanh toán</span>
+                        }
+                        else if (Model.PaymentStatus == LanAnhComputer.Constants.PaymentStatuses.Cancelled)
+                        {
+                            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">Đã hủy</span>
+                        }
+                        else
+                        {
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Chờ thanh toán</span>
+                        }
+                        <p class="text-sm text-slate-500 mt-2">Phương thức: <span class="font-medium text-slate-700">@Model.PaymentMethod</span></p>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-100">
+                    <label class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2 block">Trạng thái vận chuyển</label>
+                    
+                    <form action="/admin/don-hang/@Model.OrderId/trang-thai" method="post" class="flex items-center gap-2">
+                        @Html.AntiForgeryToken()
+                        <select name="status" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="@LanAnhComputer.Constants.OrderStatuses.Pending" selected="@(Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Pending)">Chờ xử lý</option>
+                            <option value="@LanAnhComputer.Constants.OrderStatuses.Shipped" selected="@(Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Shipped)">Đang giao hàng</option>
+                            <option value="@LanAnhComputer.Constants.OrderStatuses.Delivered" selected="@(Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Delivered)">Đã giao hàng</option>
+                            <option value="@LanAnhComputer.Constants.OrderStatuses.Cancelled" selected="@(Model.OrderStatus == LanAnhComputer.Constants.OrderStatuses.Cancelled)">Đã hủy</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Cập nhật</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

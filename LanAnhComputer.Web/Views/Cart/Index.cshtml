@@ -170,15 +170,17 @@
                 }
 
             })
-            .then(response => {
+                    .then(async response => {
 
-                if (response.ok) {
-                    location.reload();
-                }
-                else {
-                    alert("Có lỗi xảy ra");
-                }
-            });
+            if (response.ok) {
+                location.reload();
+                return;
+            }
+
+            const errorMessage = await response.text();
+
+            alert(errorMessage);
+        });
         }
 
         function updateQuantity(id, delta) {

@@ -6,6 +6,7 @@ namespace LanAnhComputer.Web.Services
     public interface IOrderService
     {
         Task<List<OrderDto>> GetOrdersAsync(string token);
+        Task<OrderDto?> GetOrderByIdAsync(long id, string token);
         Task<bool> UpdateOrderStatusAsync(long orderId, string status, string token);
     }
 
@@ -25,6 +26,21 @@ namespace LanAnhComputer.Web.Services
             var orders = await _httpClient.GetFromJsonAsync<List<OrderDto>>("api/Orders");
 
             return orders ?? new List<OrderDto>();
+        }
+
+        public async Task<OrderDto?> GetOrderByIdAsync(long id, string token)
+        {
+            _httpClient.AddJwt(token);
+
+            try
+            {
+                var order = await _httpClient.GetFromJsonAsync<OrderDto>($"api/Orders/{id}");
+                return order;
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
 
         public async Task<bool> UpdateOrderStatusAsync(long orderId, string status, string token)

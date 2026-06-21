@@ -1,0 +1,199 @@
+﻿@model LanAnhComputer.Web.Models.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Thong tin ca nhan";
+    Layout = "_Layout";
+}
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+            @TempData["Success"]
+        </div>
+    }
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800">
+            Thông tin cá nhân 
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+            Cập nhật thông tin tài khoản của bạn 
+        </p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 h-fit">
+
+            <div class="flex flex-col items-center">
+
+                <div class="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center mb-4">
+
+                    <span class="text-3xl font-bold text-primary-600">
+                        @(!string.IsNullOrWhiteSpace(Model.FullName)
+                            ? Model.FullName.Substring(0, 1).ToUpper()
+                            : "U")
+                    </span>
+
+                </div>
+
+                <h3 class="font-semibold text-slate-800">
+                    @Model.FullName
+                </h3>
+
+                <p class="text-sm text-slate-500">
+                    @Model.Email
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="lg:col-span-2">
+
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+
+                <h2 class="text-lg font-semibold text-slate-800 mb-6">
+                    Thong tin tai khoan
+                </h2>
+
+                <form asp-controller="Account"  asp-action="UpdateProfile" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="grid md:grid-cols-2 gap-5">
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Họ tên
+                            </label>
+
+                            <input asp-for="FullName"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Email
+                            </label>
+
+                            <input asp-for="Email"
+                                   readonly
+                                   class="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Số điện thoại 
+                            </label>
+
+                            <input asp-for="Phone"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Giới tính 
+                            </label>
+
+                            <select asp-for="Gender"
+                                    class="w-full rounded-lg border border-slate-300 px-4 py-3">
+
+                                <option value="">Chọn giới tính</option>
+                                <option value="Male">Nam</option>
+                                <option value="Female">Nữ</option>
+
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Ngày sinh
+                            </label>
+
+                            <input asp-for="DateOfBirth"
+                                   type="date"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3" />
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6">
+
+                        <button type="submit"
+                                class="px-6 py-3 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-medium">
+                            Cập nhật thông tin
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+
+                <h2 class="text-lg font-semibold text-slate-800 mb-6">
+                    Đổi mật khẩu
+                </h2>
+
+                <form asp-controller="Account"  asp-action="ChangePassword"   method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="grid md:grid-cols-3 gap-5">
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Mật khẩu hiện tại
+                            </label>
+
+                            <input asp-for="CurrentPassword"
+                                   type="password"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Mật khẩu mới
+                            </label>
+
+                            <input asp-for="NewPassword"
+                                   type="password"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">
+                                Xác nhận mật khẩu mới
+                            </label>
+
+                            <input asp-for="ConfirmPassword"
+                                   type="password"
+                                   class="w-full rounded-lg border border-slate-300 px-4 py-3" />
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6">
+
+                        <button type="submit"
+                                class="px-6 py-3 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 font-medium">
+                            Lưu
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+   
+
+</div>

@@ -1,7 +1,7 @@
 @model List<LanAnhComputer.Dtos.InventoryItemDto>
 
 @{
-    ViewData["Title"] = "Quan ly kho hang";
+    ViewData["Title"] = "Quản lý kho hàng";
     ViewData["ActivePage"] = "Inventory";
     Layout = "_AdminLayout";
     var status = ViewBag.Status as string;
@@ -29,20 +29,20 @@
         <table class="w-full">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">San pham</th>
-                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Gia nhap</th>
-                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Gia ban</th>
-                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Ton kho</th>
-                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Nguong canh bao</th>
-                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Trang thai</th>
-                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Thao tac</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Sản phẩm</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Giá nhập</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Giá bán</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Tồn kho</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Ngưỡng cảnh báo</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Trạng thái</th>
+                    <th class="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @if (Model == null || Model.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-slate-500">Chua co du lieu kho hang.</td>
+                        <td colspan="7" class="px-6 py-8 text-center text-slate-500">Chưa có dữ liệu kho hàng.</td>
                     </tr>
                 }
                 @foreach (var item in Model ?? new List<LanAnhComputer.Dtos.InventoryItemDto>())
@@ -55,9 +55,9 @@
                     };
                     var badgeText = item.StockStatus switch
                     {
-                        "OutOfStock" => "Het hang",
-                        "LowStock" => "Sap het",
-                        _ => "Con hang"
+                        "OutOfStock" => "Hết hàng",
+                        "LowStock" => "Sắp hết",
+                        _ => "Còn hàng"
                     };
 
                     <tr class="hover:bg-slate-50">
@@ -82,14 +82,14 @@
                                         data-threshold="@item.LowStockThreshold"
                                         data-import-price="@item.ImportPrice"
                                         data-sale-price="@item.SalePrice">
-                                    Sua ton
+                                    Sửa tồn
                                 </button>
                                 <button type="button"
                                         onclick="openImportStock(this)"
                                         class="px-3 py-1.5 text-sm border border-primary-200 text-primary-700 rounded-lg hover:bg-primary-50"
                                         data-product-id="@item.ProductId"
                                         data-import-price="@item.ImportPrice">
-                                    Nhap hang
+                                    Nhập hàng
                                 </button>
                             </div>
                         </td>
@@ -104,7 +104,7 @@
     <div class="absolute inset-0 bg-black/50" onclick="closeStockModal()"></div>
     <div class="absolute top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-xl">
         <div class="flex items-center justify-between border-b border-slate-200 p-5">
-            <h2 id="stockModalTitle" class="text-lg font-semibold">Cap nhat kho</h2>
+            <h2 id="stockModalTitle" class="text-lg font-semibold">Cập nhật kho</h2>
             <button type="button" onclick="closeStockModal()" class="p-2 hover:bg-slate-100 rounded-lg">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -113,29 +113,29 @@
             @Html.AntiForgeryToken()
             <div id="updateFields" class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Ton kho</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Tồn kho</label>
                     <input id="StockQuantity" name="StockQuantity" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Nguong canh bao</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Ngưỡng cảnh báo</label>
                     <input id="LowStockThreshold" name="LowStockThreshold" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Gia nhap</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Giá nhập</label>
                     <input id="ImportPrice" name="ImportPrice" type="number" min="0" step="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Gia ban</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Giá bán</label>
                     <input id="SalePrice" name="SalePrice" type="number" min="0" step="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
             </div>
             <div id="importFields" class="grid grid-cols-2 gap-4 hidden">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">So luong nhap</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Số lượng nhập</label>
                     <input id="Quantity" name="Quantity" type="number" min="1" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Gia nhap moi</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Giá nhập mới</label>
                     <input id="ImportPriceNew" name="ImportPrice" type="number" min="0" step="1000" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
             </div>

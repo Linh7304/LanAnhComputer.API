@@ -1,16 +1,26 @@
+using LanAnhComputer.API.Dtos;
 using LanAnhComputer.Web.Models;
 using LanAnhComputer.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace LanAnhComputer.Web.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(
+            IAccountService accountService,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration)
         {
             _accountService = accountService;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -32,7 +42,9 @@ namespace LanAnhComputer.Web.Controllers
 
             var redirectTo = result.Role == "Admin"
                 ? "/admin"
-                : string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl;
+                : string.IsNullOrEmpty(returnUrl)
+                    ? "/"
+                    : returnUrl;
 
             return Ok(new
             {
@@ -50,7 +62,7 @@ namespace LanAnhComputer.Web.Controllers
             {
                 return BadRequest(new
                 {
-                    message = "Đăng ký thất bại"
+                    message = "Tài khoản mật khẩu đã tồn tại "
                 });
             }
 
@@ -69,11 +81,119 @@ namespace LanAnhComputer.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        private void SaveUserSession(AuthResponseViewModel result)
+        [HttpGet]
+        public async Task<IActionResult> Profile()
         {
-            HttpContext.Session.SetString("JWT", result.Token);
-            HttpContext.Session.SetString("FullName", result.FullName ?? "User");
-            HttpContext.Session.SetString("Role", result.Role);
+            var token =
+                HttpContext.Session.GetString("JWT");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var profile =
+                await _accountService.GetProfileAsync(token);
+
+            if (profile == null)
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var model = new ProfileViewModel
+            {
+                FullName = profile.FullName,
+                Email = profile.Email,
+                Phone = profile.Phone,
+                Gender = profile.Gender,
+                DateOfBirth = profile.DateOfBirth
+            };
+
+            return View(
+                "~/Views/Profile/Index.cshtml",
+                model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(
+            ProfileViewModel model)
+        {
+            var token =
+                HttpContext.Session.GetString("JWT");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var success =
+                await _accountService.UpdateProfileAsync(
+                    model,
+                    token);
+
+            TempData["Success"] =
+                success
+                ? "Cap nhat thong tin thanh cong"
+                : "Cap nhat that bai";
+
+            if (success)
+            {
+                HttpContext.Session.SetString(
+                    "FullName",
+                    model.FullName);
+            }
+
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(
+            ProfileViewModel model)
+        {
+            var token =
+                HttpContext.Session.GetString("JWT");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var success =
+                await _accountService.ChangePasswordAsync(
+                    model,
+                    token);
+
+            TempData["Success"] =
+                success
+                ? "Đổi mật khẩu thành công"
+                : "Đổi mật khẩu thất bại";
+
+            return RedirectToAction(nameof(Profile));
+        }
+        private void SaveUserSession(
+            AuthResponseViewModel result)
+        {
+            HttpContext.Session.SetString(
+                "JWT",
+                result.Token);
+
+            HttpContext.Session.SetString(
+                "FullName",
+                result.FullName ?? "User");
+
+            HttpContext.Session.SetString(
+                "Role",
+                result.Role);
         }
     }
 }

@@ -15,27 +15,24 @@ namespace LanAnhComputer.Web.Controllers
         private readonly IAdminInventoryService _inventoryService;
         private readonly IUserService _userService;
         private readonly ICategoryService _categoryService;
-        private readonly IDashboardService _dashboardService;
 
         public AdminController(
             IProductService productService,
             IOrderService orderService,
             IAdminInventoryService inventoryService,
             IUserService userService,
-            ICategoryService categoryService,
-            IDashboardService dashboardService)
+            ICategoryService categoryService)
         {
             _productService = productService;
             _orderService = orderService;
             _inventoryService = inventoryService;
             _userService = userService;
             _categoryService = categoryService;
-            _dashboardService = dashboardService;
         }
 
         [HttpGet("")]
         [HttpGet("dashboard")]
-        public async Task<IActionResult> Index(int days = 30)
+        public async Task<IActionResult> Index()
         {
             var token = GetAdminToken();
             if (token == null)
@@ -43,18 +40,13 @@ namespace LanAnhComputer.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var chartDays = Math.Clamp(days, 7, 90);
-            var overview = await _dashboardService.GetOverviewAsync(token, chartDays);
+            var summary = await _inventoryService.GetSummaryAsync(token);
 
             return View(new AdminDashboardViewModel
             {
-                TotalCustomers = overview?.TotalCustomers ?? 0,
-                TotalOrders = overview?.TotalOrders ?? 0,
-                TotalRevenue = overview?.TotalRevenue ?? 0,
-                TotalProducts = overview?.TotalProducts ?? 0,
-                PendingOrders = overview?.PendingOrders ?? 0,
-                DailyRevenue = overview?.DailyRevenue ?? new List<RevenueByDateDto>(),
-                ChartDays = chartDays
+                OutOfStockCount = summary?.OutOfStockCount ?? 0,
+                LowStockCount = summary?.LowStockCount ?? 0,
+                TopSellingProducts = summary?.TopSellingProducts ?? new List<TopSellingProductDto>()
             });
         }
 
